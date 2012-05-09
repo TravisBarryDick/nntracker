@@ -22,6 +22,7 @@ def apply_to_pts(homography, pts):
     result[:h] /= result[-1]
     return np.asarray(result[:h])
 
+# TODO: Implement preconditioning if we ever use this with more than four correspondences.
 def compute_homography(in_pts, out_pts):
     num_pts = in_pts.shape[1]
     in_pts = homogenize(in_pts)

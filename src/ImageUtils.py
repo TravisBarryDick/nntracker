@@ -51,5 +51,5 @@ def sample_region(img, pts):
     weave.inline(code, ["img", "result", "pts", "num_pts", "width", "height"],
                  support_code=support_code, headers=["<cmath>"],
                  type_converters=converters.blitz)
-    return result
+    return result - result.mean()
 
