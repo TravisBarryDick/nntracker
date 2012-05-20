@@ -22,7 +22,13 @@ def apply_to_pts(homography, pts):
     result[:h] /= result[-1]
     return np.asarray(result[:h])
 
-# TODO: Implement preconditioning if we ever use this with more than four correspondences.
+def square_to_corners_warp(corners):
+    square = np.array([[-.5,-.5],[.5,-.5],[.5,.5],[-.5,.5]]).T    
+    return compute_homography(square, corners)
+
+# Note: This is not doing the preconditioning step! Only important
+# if we ever want to estimate homographies from more than 4 point
+# correspondences.
 def compute_homography(in_pts, out_pts):
     num_pts = in_pts.shape[1]
     in_pts = homogenize(in_pts)
@@ -42,3 +48,4 @@ def random_homography(sigma_d, sigma_t):
     square = np.array([[-.5,-.5],[.5,-.5],[.5,.5],[-.5,.5]]).T
     disturbance = np.random.normal(0,sigma_d,(2,4)) + np.random.normal(0,sigma_t,(2,1))
     return compute_homography(square, square+disturbance)
+

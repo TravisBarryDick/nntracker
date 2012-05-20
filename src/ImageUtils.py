@@ -1,6 +1,14 @@
+import cv2
 import numpy as np
 from scipy import weave
 from scipy.weave import converters
+
+def draw_region(img, corners, color, thickness=1):
+    for i in xrange(4):
+        p1 = (int(corners[0,i]), int(corners[1,i]))
+        p2 = (int(corners[0,(i+1)%4]), int(corners[1,(i+1)%4]))
+        cv2.line(img, p1, p2, color, thickness)
+        #cv2.line(img, corners[:,i], corners[:,(i+1)%4], color, thickness)
 
 def to_grayscale(img):
     (height, width, depth) = img.shape
@@ -32,7 +40,7 @@ def sample_region(img, pts):
       const int ux = ceil(x);
       const int ly = floor(y);
       const int uy = ceil(y);
-      if (lx < 0 || ux >= width || ly < 0 || uy >= height) return 0;
+      if (lx < 0 || ux >= width || ly < 0 || uy >= height) return 1;
       const double ulv = img(ly,lx);
       const double urv = img(ly,ux);
       const double lrv = img(uy,ux);

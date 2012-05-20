@@ -26,9 +26,3 @@
   5. Average residuals (?)
 * Conclusions
 
-* Things to Implement [2/3]
-  - [X] Static Image Experiment
-  - [ ] python wrapper for the C ESM library
-  - [X] NN algorithm
-  - [ ] Probably need to think of some small improvements to the
-        algorithm otherwise performance will be terrbile

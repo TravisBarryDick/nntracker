@@ -2,17 +2,10 @@ import cv
 import cv2
 import numpy as np
 
+from CameraMotionHomography import *
 from Homography import *
 from ImageUtils import *
 from NNTracker import *
-
-def draw_region(img, corners, color, thickness=1):
-    for i in xrange(4):
-        p1 = (int(corners[0,i]), int(corners[1,i]))
-        p2 = (int(corners[0,(i+1)%4]), int(corners[1,(i+1)%4]))
-        cv2.line(img, p1, p2, color, thickness)
-        #cv2.line(img, corners[:,i], corners[:,(i+1)%4], color, thickness)
-        
 
 class CameraTrackingApp:
     
@@ -32,11 +25,10 @@ class CameraTrackingApp:
                 self.m_end = (x,y)
             elif evt == cv2.EVENT_LBUTTONUP:
                 self.m_end = (x,y)
-                self.tracker = NNTracker(1000,1, n_proposals=20, recycle_rate=10)
+                self.tracker = NNTracker(500,1,res=(16,16), n_proposals=10, proposal_recycle_rate=5)
                 ul = (min(self.m_start[0],self.m_end[0]), min(self.m_start[1],self.m_end[1]))
                 lr = (max(self.m_start[0],self.m_end[0]), max(self.m_start[1],self.m_end[1]))
-                res = (16,16)
-                self.tracker.initialize(self.gray_img, ul, lr, res)
+                self.tracker.initialize_with_rectangle(self.gray_img, ul, lr)
                 self.m_start, self.m_end = None, None
 
         vc = cv2.VideoCapture(0)
