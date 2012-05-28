@@ -1,3 +1,4 @@
+import math
 import re
 
 import cv2
@@ -8,11 +9,16 @@ from ImageUtils import *
 from NNTracker import *
 from Polygons import *
 
+def draw_allowable_errors(img, corners, color):
+    for i in xrange(corners.shape[1]):
+        p = (int(corners[0,i]), int(corners[1,i]))
+        cv2.circle(img, p, 10, color, 1)
+
 def to_template_warp(warp):
-    return warp * np.matrix([[1,0,0],[0,1,0],[0,0,2.5]])
+    return warp * np.matrix([[1,0,0],[0,1,0],[0,0,2.]])
 
 def to_XGA_warp(warp):
-    return warp * np.matrix([[1,0,0],[0,1,0],[0,0,1.0/2.5]])
+    return warp * np.matrix([[1,0,0],[0,1,0],[0,0,1.0/2]])
 
 def to_template(region):
     square = np.array([[-.5,-.5],[.5,-.5],[.5,.5],[-.5,.5]]).T
@@ -66,10 +72,12 @@ def run_benchmark(directory, num, tracker, num_runs=1):
             tracker_initialized = False
             video, inits = open_benchmark(directory, num)
             frame = 0
+            last_corners = None
             while True:
                 succ, img = video.read()
                 if not succ: break 
                 gray_img = to_grayscale(img)
+                #gray_img = cv2.blur(gray_img, (4,4))
                 if frame in inits.keys():
                     if tracker_initialized: 
                         tracker.set_region(to_template(inits[frame][1]))
@@ -82,6 +90,13 @@ def run_benchmark(directory, num, tracker, num_runs=1):
                 corner.append(tracker.get_corners())
                 draw_region(img, tracker.get_corners(), (255,0,0), 2)
                 draw_region(img, to_XGA(tracker.get_corners()), (0,255,0), 1)
+                
+                if last_corners != None:
+                    print "RMSD = ", math.sqrt(np.mean(np.sum((to_XGA(tracker.get_corners()) - last_corners)**2,axis=1)))
+                    draw_allowable_errors(img, last_corners, (0,0,200))
+                last_corners = to_XGA(tracker.get_corners())
+                draw_allowable_errors(img, to_XGA(tracker.get_corners()), (0,0,255))
+                
                 cv2.imshow("metaio benchmark", img)
                 cv2.waitKey(1)
                 frame += 1
@@ -101,10 +116,16 @@ def replay(directory, num, results):
     while True:
         succ, img = video.read()
         if not succ: break
+        try:
+            (p, a, c) = polygon_descriptors(corners[frame])
+            cv2.circle(img, (int(c[0]), int(c[1])), 1, (255,0,0), 2)
+        except:
+            pass
         draw_region(img, corners[frame], (255,0,0), 2)
+        draw_region(img, to_XGA(corners[frame]), (0,255,0), 1)
         cv2.imshow("replay", img)
         frame += 1
-        cv2.waitKey(1)
+        cv2.waitKey(20)
     video.release()
     cv2.destroyWindow("replay")
     
@@ -124,4 +145,4 @@ def run_all_benchmarks(tracker, results, num_runs = 1):
         results[(d,n)] = run_benchmark(d, n, tracker, num_runs)
     return results
     
-               
+tracker = NNTracker(10000, 5, res=(40,40), n_proposals=20, proposal_recycle_rate=10)

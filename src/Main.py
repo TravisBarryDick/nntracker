@@ -25,10 +25,14 @@ class CameraTrackingApp:
                 self.m_end = (x,y)
             elif evt == cv2.EVENT_LBUTTONUP:
                 self.m_end = (x,y)
-                self.tracker = NNTracker(500,1,res=(16,16), n_proposals=10, proposal_recycle_rate=5)
                 ul = (min(self.m_start[0],self.m_end[0]), min(self.m_start[1],self.m_end[1]))
                 lr = (max(self.m_start[0],self.m_end[0]), max(self.m_start[1],self.m_end[1]))
-                self.tracker.initialize_with_rectangle(self.gray_img, ul, lr)
+
+                if self.tracker == None:
+                    self.tracker = NNTracker(10000,4,res=(40,40), n_proposals=12, proposal_recycle_rate=6)
+                    self.tracker.initialize_with_rectangle(self.gray_img, ul, lr)
+                else:
+                    self.tracker.set_region_with_rectangle(ul, lr)
                 self.m_start, self.m_end = None, None
 
         vc = cv2.VideoCapture(0)
@@ -44,8 +48,8 @@ class CameraTrackingApp:
 
             if self.tracker != None:
                 self.tracker.update(self.gray_img)
-                for i in xrange(self.tracker.n_proposals):
-                    draw_region(img, self.tracker.get_corners(i), (0,190,0))
+                #for i in xrange(self.tracker.n_proposals):
+                #    draw_region(img, self.tracker.get_corners(i), (0,190,0))
                 draw_region(img, self.tracker.get_corners(), (255,0,0), 2)
             cv2.imshow('vis', img)
         cv2.destroyWindow('vis')

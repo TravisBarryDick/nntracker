@@ -10,6 +10,13 @@ def draw_region(img, corners, color, thickness=1):
         cv2.line(img, p1, p2, color, thickness)
         #cv2.line(img, corners[:,i], corners[:,(i+1)%4], color, thickness)
 
+    for i in xrange(4):
+        p1 = (int(corners[0,i]), int(corners[1,i]))
+        p2 = (int(corners[0,(i+2)%4]), int(corners[1,(i+2)%4]))
+        cv2.line(img, p1, p2, color, thickness)
+        #cv2.line(img, corners[:,i], corners[:,(i+1)%4], color, thickness)
+
+
 def to_grayscale(img):
     (height, width, depth) = img.shape
     grayscale = np.empty((height,width), dtype=np.float64)
@@ -40,7 +47,7 @@ def sample_region(img, pts):
       const int ux = ceil(x);
       const int ly = floor(y);
       const int uy = ceil(y);
-      if (lx < 0 || ux >= width || ly < 0 || uy >= height) return 1;
+      if (lx < 0 || ux >= width || ly < 0 || uy >= height) return 0.5;
       const double ulv = img(ly,lx);
       const double urv = img(ly,ux);
       const double lrv = img(uy,ux);
