@@ -15,10 +15,10 @@ def draw_allowable_errors(img, corners, color):
         cv2.circle(img, p, 10, color, 1)
 
 def to_template_warp(warp):
-    return warp * np.matrix([[1,0,0],[0,1,0],[0,0,2.]])
+    return warp * np.matrix([[1,0,0],[0,1,0],[0,0,2.5]])
 
 def to_XGA_warp(warp):
-    return warp * np.matrix([[1,0,0],[0,1,0],[0,0,1.0/2]])
+    return warp * np.matrix([[1,0,0],[0,1,0],[0,0,1.0/2.5]])
 
 def to_template(region):
     square = np.array([[-.5,-.5],[.5,-.5],[.5,.5],[-.5,.5]]).T

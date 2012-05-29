@@ -50,7 +50,8 @@ class WarpIndex:
         """
         best_index = weave.inline(code, ['images', 'img', 'image_size', 'num_images'],
                                   headers = ['<limits>', '<cmath>'],
-                                  type_converters=converters.blitz)
+                                  type_converters=converters.blitz,
+                                  compiler='gcc')
         return self.warps[best_index]
 
     def best_match(self, img):
@@ -88,7 +89,7 @@ class NNTracker:
         self.warp_index = WarpIndex(self.n_samples, self.warp_generator)
         self.warp_index.build_index(img, self.pts, self.get_warp())
         print "Small warp index:"
-        self.small_warp_index = WarpIndex(800, lambda: random_homography(0.001, 0.0001))
+        self.small_warp_index = WarpIndex(2000, lambda: random_homography(0.002, 0.0002))
         self.small_warp_index.build_index(img, self.pts, self.get_warp())
 
     def initialize_with_rectangle(self, img, ul, lr):
@@ -112,7 +113,7 @@ class NNTracker:
         self.best_proposal = order[0]
         self.loss = losses[order[0]]
 
-        for i in xrange(3):
+        for i in xrange(6):
             self.proposals[order[0]] = self.update_proposal(img, self.proposals[order[0]], self.small_warp_index)
 
         for i in xrange(self.proposal_recycle_rate):

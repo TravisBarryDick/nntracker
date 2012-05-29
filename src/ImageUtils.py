@@ -31,7 +31,8 @@ def to_grayscale(img):
     }
     """
     weave.inline(code, ['height', 'width', 'depth', 'grayscale', 'img'],
-                 type_converters=converters.blitz)
+                 type_converters=converters.blitz,
+                 compiler='gcc')
     return grayscale
 
 def sample_region(img, pts):
@@ -65,6 +66,12 @@ def sample_region(img, pts):
     """
     weave.inline(code, ["img", "result", "pts", "num_pts", "width", "height"],
                  support_code=support_code, headers=["<cmath>"],
-                 type_converters=converters.blitz)
-    return result - result.mean()
+                 type_converters=converters.blitz,
+                 compiler='gcc')
+    
+    result -= result.mean()
+    min_val = result.min()
+    max_val = result.max()
+    return (result - min_val) / (max_val - min_val)
+    
 
