@@ -70,6 +70,7 @@ class NNTracker:
         self.n_proposals = n_proposals
         self.proposal_recycle_rate = proposal_recycle_rate
         self.warp_generator = warp_generator
+        self.initialized = False
     
     def set_region(self, corners):
         warp = square_to_corners_warp(corners)
@@ -91,6 +92,7 @@ class NNTracker:
         print "Small warp index:"
         self.small_warp_index = WarpIndex(2000, lambda: random_homography(0.002, 0.0002))
         self.small_warp_index.build_index(img, self.pts, self.get_warp())
+        self.initialized = True
 
     def initialize_with_rectangle(self, img, ul, lr):
         corners = np.array([ ul, [lr[0],ul[1]], lr, [ul[0],lr[1]]]).T
@@ -104,6 +106,7 @@ class NNTracker:
         return updated_warp
 
     def update(self, img):
+        if not self.initialized: return
         losses = np.empty(self.n_proposals)
         for i in xrange(self.n_proposals):
             for j in xrange(self.n_iterations):
@@ -119,6 +122,9 @@ class NNTracker:
         for i in xrange(self.proposal_recycle_rate):
             self.proposals[order[-i-1]] = self.proposals[order[0]] * self.warp_generator()
 
+    def is_initialized(self):
+        return self.initialized
+
     def get_loss(self, img, warp = None):
         if warp == None: warp = self.get_warp()
         return np.sum(np.abs(sample_region(img, apply_to_pts(warp, self.pts)) 
@@ -132,9 +138,11 @@ class NNTracker:
         return apply_to_pts(self.get_warp(proposal), 
                             np.array([[-.5,-.5],[.5,-.5],[.5,.5],[-.5,.5]]).T)
 
+    def proposal_image(self, img):
+        return sample_region(img, apply_to_pts(self.get_warp(), self.pts))
+
     def error_image(self, img):
-        current = sample_region(img, apply_to_pts(self.get_warp(), self.pts))
-        return np.abs(current - self.template).reshape(self.res)
+        return np.abs(self.proposal_image() - self.template).reshape(self.res)
 
 
 
