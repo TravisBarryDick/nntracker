@@ -29,31 +29,6 @@ class WarpIndex:
         self.flann.build_index(self.images.T, algorithm='kdtree', trees=10)
         print "Done!"
 
-    def best_index_weave(self, img): # This is much slower than the FLANN function
-        images = self.images
-        (image_size, num_images) = images.shape
-        code = \
-            """
-            int best_index = -1;
-            double best_loss = std::numeric_limits<double>::max();
-            for (int j = 0; j < num_images; j++) {
-              double loss = 0;
-                for (int i = 0; i < image_size; i++) {
-                  loss += std::abs(images(i,j) - img(i));
-                }
-              if (loss < best_loss) {
-            best_index = j;
-            best_loss = loss;
-          }
-        }
-        return_val = best_index;
-        """
-        best_index = weave.inline(code, ['images', 'img', 'image_size', 'num_images'],
-                                  headers = ['<limits>', '<cmath>'],
-                                  type_converters=converters.blitz,
-                                  compiler='gcc')
-        return self.warps[best_index]
-
     def best_match(self, img):
         results, dists = self.flann.nn_index(img)
         return self.warps[results[0]]
