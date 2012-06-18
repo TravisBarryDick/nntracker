@@ -1,0 +1,16 @@
+<package>
+  <description brief="travis_tracker">
+	
+  </description>
+  
+  <author> Travis Dick, Camilo Perez, Romeo Tatsambon </author>
+
+  <license>BSD</license>
+
+  <depend package="rospy"/>
+  <depend package="sensor_msgs"/>
+  <depend package="cv_bridge"/>
+
+</package>
+
+

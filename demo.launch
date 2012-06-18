@@ -1,0 +1,10 @@
+<launch>
+
+  <node name="camera" pkg="uvc_camera" type="camera_node">
+	<param name="width" value="320" />
+	<param name="height" value="240" />
+	<param name="gain" value="1300" />
+  </node>
+  <node name="tracker" pkg="NNTracker" type="interactive_node.py" />
+
+</launch>
