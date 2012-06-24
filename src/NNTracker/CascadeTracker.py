@@ -1,6 +1,7 @@
 from TrackerBase import *
 
 class CascadeTracker(TrackerBase):
+
     def __init__(self, trackers):
         self.trackers = trackers
         self.initialized = False

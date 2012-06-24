@@ -5,16 +5,13 @@ roslib.load_manifest('NNTracker')
 
 import sys
 
+from cv_bridge import CvBridge, CvBridgeError
+import numpy as np
 import rospy
 from std_msgs.msg import String
 from sensor_msgs.msg import Image, RegionOfInterest, CameraInfo
+
 from NNTracker.msg import NNTrackerROI
-from cv_bridge import CvBridge, CvBridgeError
-
-import cv
-import cv2
-import numpy as np
-
 from NNTracker.CascadeTracker import *
 from NNTracker.Homography import *
 from NNTracker.InteractiveTracking import *

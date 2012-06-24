@@ -1,8 +1,30 @@
-import math
+""" 
+A collection of functions for applying and generating homographies.
 
+Author: Travis Dick (travis.barry.dick@gmail.com)
+"""
+
+import math
 import numpy as np
 
 def homogenize(pts):
+    """ Transforms points into their homogeneous coordinate form.
+
+    Parameters:
+    -----------
+    pts : (n,m) numpy array
+      An array where each column represents a point in cartesian
+      coordinates.
+
+    Returns:
+    --------
+    An (n+1, m) numpy array, identical to pts, with a row of ones
+    appended to the bottom.
+
+    See Also:
+    ---------
+    dehomonize
+    """
     (h,w) = pts.shape
     results = np.empty((h+1,w))
     results[:h] = pts
@@ -10,12 +32,45 @@ def homogenize(pts):
     return results
 
 def dehomogenize(pts):
+    """ Transforms points into their cartesian coordinate form.
+    
+    Parameters:
+    -----------
+    pts : (n,m) numpy array
+      An array where each column represents a point in homogeneous
+      coordinates. Columns in pts may not be "points at infinity".
+
+    Returns:
+    --------
+    An (n-1,m) numpy array, where each column is the cartesian
+    representation of the corresponding column in the pts matrix.
+
+    See Also:
+    ---------
+    homogenize
+    """
     (h,w) = pts.shape
     results = np.empty((h-1,w))
     results[:h-1] = pts[:h-1]/pts[h-1]
     return results
 
 def apply_to_pts(homography, pts):
+    """ Applies a homography to a collection of points.
+
+    Parameters:
+    -----------
+    homography : (3,3) numpy matrix
+      A homography on R^2 represented in homogeneous coordinates.
+
+    pts : (2,n) numpy array
+      An array where each column is the cartesian representation
+      of a point in R^2. 
+
+    Returns:
+    --------
+    An (2,n) numpy array, where each column is the image of the
+    corresponding column of pts under the givn homography.
+    """
     (h,w) = pts.shape
     result = np.empty((h+1,w))
     result[:h] = pts
@@ -24,14 +79,26 @@ def apply_to_pts(homography, pts):
     result[:h] /= result[-1]
     return np.asarray(result[:h])
 
-def square_to_corners_warp(corners):
-    square = np.array([[-.5,-.5],[.5,-.5],[.5,.5],[-.5,.5]]).T    
-    return compute_homography(square, corners)
-
-# Note: This is not doing the preconditioning step! Only important
-# if we ever want to estimate homographies from more than 4 point
-# correspondences.
 def compute_homography(in_pts, out_pts):
+    """ Uses the DLT algorithm to compute homographies.
+
+    Parameters:
+    -----------
+    in_pts : (2,n) numpy array
+      Each column represents an "input point"
+      
+    out_pts: (2,n) numpy array
+      Each column represents an "output point"
+
+    Returns:
+    --------
+    A (3,3) numpy matrix H that minimizes:
+
+      l2_norm(apply_to_pts(H, in_pts) - out_pts)^2
+
+    i.e. the homography that does the best job of mapping
+    in_pts to out_pts.
+    """
     num_pts = in_pts.shape[1]
     in_pts = homogenize(in_pts)
     out_pts = homogenize(out_pts)
@@ -46,61 +113,69 @@ def compute_homography(in_pts, out_pts):
     homography /= homography[2,2]
     return np.asmatrix(homography)
 
+def square_to_corners_warp(corners):
+    """ Computes the homography from the centered unit square to 
+    the quadrilateral given by the corners matrix.
+    
+    Parameters:
+    -----------
+    corners : (2,4) numpy array
+      The corners of the target quadrilateral.
+    
+    Returns:
+    --------
+    A (3,3) numpy matrix, representing a homography, that maps
+    the point (-.5,-.5) to corners[:,0], (.5,-.5) to corners[:,1],
+    (.5,.5) to corners[:,2], and (-.5,.5) to corners[:,3].
+
+    See Also:
+    ---------
+    compute_homography
+    """
+    square = np.array([[-.5,-.5],[.5,-.5],[.5,.5],[-.5,.5]]).T    
+    return compute_homography(square, corners)
+
 def random_homography(sigma_d, sigma_t):
+    """ Generates a random "small" homography.
+
+    For details, please see source.
+
+    Parameters:
+    -----------
+    sigma_d : real number
+      The standard deviation of the noise added to each corner
+      of the square.
+    
+    sigma_t: real number
+      The standard deviation of the noise added to the center
+      of the square.
+
+    Returns:
+    --------
+    A (3,3) numpy matrix representing a random homography.
+    """
     square = np.array([[-.5,-.5],[.5,-.5],[.5,.5],[-.5,.5]]).T
     disturbance = np.random.normal(0,sigma_d,(2,4)) + np.random.normal(0,sigma_t,(2,1))
     return compute_homography(square, square+disturbance)
 
 def random_translation_and_scale(sigma_t, sigma_s):
+    """ Generates a random homography that only translates and scales.
+
+    For details, please see source.
+    
+    Parameters:
+    -----------
+    sigma_t : real number
+      The standard deviation of the translation.
+
+    sigma_s : real number
+      The standard deviation of the scale-factor
+
+    See Also:
+    ---------
+    random_homography
+    """
     tx = np.random.normal(0, sigma_t)
     ty = np.random.normal(0, sigma_t)
     s = np.random.normal(1, sigma_s)
     return np.matrix([[1,0,tx],[0,1,ty],[0,0,1/s]])
-
-def x_rotation(angle):
-    s = math.sin(angle)
-    c = math.cos(angle)
-    return np.matrix([[1,0, 0,0],
-                      [0,c,-s,0],
-                      [0,s, c,0],
-                      [0,0, 0,1]])
-
-def y_rotation(angle):
-    s = math.sin(angle)
-    c = math.cos(angle)
-    return np.matrix([[ c,0,s,0],
-                      [ 0,1,0,0],
-                      [-s,0,c,0],
-                      [ 0,0,0,1]])
-
-def z_rotation(angle):
-    s = math.sin(angle)
-    c = math.cos(angle)
-    return np.matrix([[c,-s,0,0],
-                      [s, c,0,0],
-                      [0, 0,1,0],
-                      [0, 0,0,1]])
-
-def homography_from_camera(x, y, z, rx, ry, rz):
-    translation = np.matrix([[1,0,0,x],
-                             [0,1,0,y],
-                             [0,0,1,z],
-                             [0,0,0,1]], dtype=np.float64)
-    projection = np.matrix([[1,0,0,0],
-                            [0,1,0,0],
-                            [0,0,1,0]], dtype=np.float64)
-    camera_matrix = projection * translation * x_rotation(rx) * y_rotation(ry) * z_rotation(rz)
-
-    corners3d = np.array([ [-.5,-.5,1,1],
-                            [ .5,-.5,1,1],
-                            [ .5, .5,1,1],
-                            [-.5, .5,1,1] ]).T
-    projected_corners = camera_matrix * corners3d
-    projected_corners[:-1] /= projected_corners[-1]
-    
-    square = np.array([[-.5,-.5],[.5,-.5],[.5,.5],[-.5,.5]]).T
-    return compute_homography(square, projected_corners[:-1])
-
-def random_camera_homography():
-    p = np.random.normal(0,1,6) * [0.1, 0.1, 0.1, math.pi/16, math.pi/16, math.pi/16]
-    return homography_from_camera(*p)
