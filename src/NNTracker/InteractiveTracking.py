@@ -1,3 +1,7 @@
+"""
+Author: Travis Dick (travis.barry.dick@gmail.com)
+"""
+
 import cv
 import cv2
 import numpy as np
@@ -9,6 +13,27 @@ from NNTracker import *
 
 class InteractiveTrackingApp:
     def __init__(self, tracker, name="vis"):
+        """ An interactive window for initializing and visualizing tracker state.
+
+        The on_frame method should be called for each new frame. Typically real
+        applications subclass InteractiveTrackingApp and build in some application
+        loop that captures frames and calls on_frame.
+        
+        Parameters:
+        -----------
+        tracker : TrackerBase
+          Any class implementing the interface of TrackerBase. 
+
+        name : string
+          The name of the window. Due to some silliness in OpenCV this must
+          be unique (in the set of all OpenCV window names).
+
+        See Also:
+        ---------
+        StandaloneTrackingApp
+        RosInteractiveTrackingApp
+        """
+
         self.tracker = tracker
         self.name = name
         self.m_start = None
