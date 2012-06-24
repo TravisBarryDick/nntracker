@@ -1,3 +1,10 @@
+"""
+A small standalone application for tracker demonstration. Depends
+on OpenCV VideoCapture to grab frames from the camera.
+
+Author: Travis Dick (travis.barry.dick@gmail.com)
+"""
+
 import cv
 import cv2
 import numpy as np
