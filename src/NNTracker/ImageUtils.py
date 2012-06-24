@@ -1,7 +1,11 @@
+import itertools
+
 import cv2
 import numpy as np
 from scipy import weave
 from scipy.weave import converters
+
+from Homography import *
 
 def draw_region(img, corners, color, thickness=1):
     for i in xrange(4):
@@ -31,10 +35,10 @@ def to_grayscale(img):
                  compiler='gcc')
     return grayscale
 
-def sample_region(img, pts):
+def sample_region(img, pts, result=None):
     num_pts = pts.shape[1]
     (height, width) = img.shape
-    result = np.empty(num_pts)
+    if result == None: result = np.empty(num_pts)
     support_code = \
     """
     double bilinear_interp(blitz::Array<double,2> img, int width, int height, double x, double y) {
@@ -64,10 +68,9 @@ def sample_region(img, pts):
                  support_code=support_code, headers=["<cmath>"],
                  type_converters=converters.blitz,
                  compiler='gcc')
-    
-    #result -= result.mean()
-    min_val = result.min()
-    max_val = result.max()
-    return (result - min_val) / (max_val - min_val)
-    
+    return result
 
+def sample_and_normalize(img, pts):
+    result = sample_region(img, pts);
+    result -= result.mean()
+    return result

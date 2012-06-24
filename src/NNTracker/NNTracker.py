@@ -8,20 +8,57 @@ from scipy.weave import converters
 
 from Homography import *
 from ImageUtils import *
+from TrackerBase import *
+
+class NNTracker(TrackerBase):
+
+    def __init__(self, n_samples, n_iterations=1, res=(20,20),
+                 warp_generator=lambda:random_homography(0.05, 0.1)):
+        self.n_samples = n_samples
+        self.n_iterations = n_iterations
+        self.res = res
+        self.warp_generator = warp_generator
+        self.n_points = np.prod(res)
+        self.initialized = False
+        self.pts = np.array(list(itertools.product(np.linspace(-.5, .5, self.res[0]), 
+                                                   np.linspace(-.5, .5, self.res[1])))).T
+    
+    def set_region(self, corners):
+        self.proposal = square_to_corners_warp(corners)
+
+    def initialize(self, img, region):
+        self.set_region(region)
+        self.template = sample_and_normalize(img, apply_to_pts(self.get_warp(), self.pts))
+        self.warp_index = WarpIndex(self.n_samples, self.warp_generator, img, self.pts, self.get_warp())
+        self.initialized = True
+
+    def is_initialized(self):
+        return self.initialized
+
+    def update(self, img):
+        if not self.is_initialized(): return None
+        for i in xrange(self.n_iterations):
+            warped_pts = apply_to_pts(self.proposal, self.pts)
+            sampled_img = sample_and_normalize(img, warped_pts)
+            self.proposal = self.proposal * self.warp_index.best_match(sampled_img)
+            self.proposal /= self.proposal[2,2]
+        return self.proposal
+
+    def get_warp(self):
+        return self.proposal
+
+    def get_region(self):
+        return apply_to_pts(self.get_warp(), np.array([[-.5,-.5],[.5,-.5],[.5,.5],[-.5,.5]]).T)
 
 class WarpIndex:
-    def __init__(self, n_samples, warp_generator):
-        self.n_samples = n_samples
-        self.warp_generator = warp_generator
-
-    def build_index(self, img, pts, initial_warp):
+    def __init__(self, n_samples, warp_generator, img, pts, initial_warp):
         n_points = pts.shape[1]
         print "Sampling Warps..."
-        self.warps = [np.asmatrix(np.eye(3))] + [self.warp_generator() for i in xrange(self.n_samples - 1)]
+        self.warps = [np.asmatrix(np.eye(3))] + [warp_generator() for i in xrange(n_samples - 1)]
         print "Sampling Images..."
-        self.images = np.empty((n_points, self.n_samples))
+        self.images = np.empty((n_points, n_samples))
         for i,w in enumerate(self.warps):
-            self.images[:,i] = sample_region(img, apply_to_pts(initial_warp * w.I, pts))
+            self.images[:,i] = sample_and_normalize(img, apply_to_pts(initial_warp * w.I, pts))
         print "Building FLANN Index..."
         pyflann.set_distance_type("manhattan")
         self.flann = pyflann.FLANN()
@@ -31,96 +68,3 @@ class WarpIndex:
     def best_match(self, img):
         results, dists = self.flann.nn_index(img)
         return self.warps[results[0]]
-
-class NNTracker:
-
-    def __init__(self, n_samples, n_iterations=1, res=(16,16),
-                 n_proposals=1, proposal_recycle_rate=0,
-                 warp_generator=lambda: random_homography(0.05, 0.04),
-                 small_warp_generator= lambda:random_homography(0.002, 0.0002),
-                 small_n_samples = 1000):
-        self.n_samples = n_samples
-        self.n_iterations = n_iterations
-        self.n_points = np.prod(res)
-        self.res = res
-        self.n_proposals = n_proposals
-        self.proposal_recycle_rate = proposal_recycle_rate
-        self.warp_generator = warp_generator
-        self.small_warp_generator = small_warp_generator
-        self.small_n_samples = small_n_samples
-        self.initialized = False
-    
-    def set_region(self, corners):
-        warp = square_to_corners_warp(corners)
-        self.proposals = [warp.copy() for i in xrange(self.n_proposals)]
-        self.best_proposal = 0
-        
-    def set_region_with_rectangle(self, ul, lr):
-        corners = np.array([ ul, [lr[0],ul[1]], lr, [ul[0],lr[1]]]).T
-        self.set_region(corners)
-
-    def initialize(self, img, region):
-        self.pts = np.array(list(itertools.product(np.linspace(-.5, .5, self.res[0]), 
-                                                   np.linspace(-.5, .5, self.res[1])))).T
-        self.set_region(region)
-        print "Main warp index:"
-        self.template = sample_region(img, apply_to_pts(self.get_warp(), self.pts))
-        self.warp_index = WarpIndex(self.n_samples, self.warp_generator)
-        self.warp_index.build_index(img, self.pts, self.get_warp())
-        print "Small warp index:"
-        self.small_warp_index = WarpIndex(self.small_n_samples, self.small_warp_generator)
-        self.small_warp_index.build_index(img, self.pts, self.get_warp())
-        self.initialized = True
-
-    def initialize_with_rectangle(self, img, ul, lr):
-        corners = np.array([ ul, [lr[0],ul[1]], lr, [ul[0],lr[1]]]).T
-        self.initialize(img, corners)
-
-    def update_proposal(self, img, warp, warp_index):
-        warped_pts = apply_to_pts(warp, self.pts)
-        sampled_img = sample_region(img, warped_pts)
-        updated_warp = warp * warp_index.best_match(sampled_img)
-        updated_warp /= updated_warp[2,2]
-        return updated_warp
-
-    def update(self, img):
-        if not self.initialized: return
-        losses = np.empty(self.n_proposals)
-        for i in xrange(self.n_proposals):
-            for j in xrange(self.n_iterations):
-                self.proposals[i] = self.update_proposal(img, self.proposals[i], self.warp_index)
-            losses[i] = np.sum(np.abs(sample_region(img, apply_to_pts(self.proposals[i], self.pts)) - self.template))
-        order = np.argsort(losses)
-        self.best_proposal = order[0]
-        self.loss = losses[order[0]]
-
-        for i in xrange(3):
-            self.proposals[order[0]] = self.update_proposal(img, self.proposals[order[0]], self.small_warp_index)
-
-        for i in xrange(self.proposal_recycle_rate):
-            self.proposals[order[-i-1]] = self.proposals[order[0]] * self.warp_generator()
-
-    def is_initialized(self):
-        return self.initialized
-
-    def get_loss(self, img, warp = None):
-        if warp == None: warp = self.get_warp()
-        return np.sum(np.abs(sample_region(img, apply_to_pts(warp, self.pts)) 
-                             - self.template))
-
-    def get_warp(self, proposal=None):
-        if proposal == None: proposal = self.best_proposal
-        return self.proposals[proposal]
-
-    def get_corners(self, proposal=None):
-        return apply_to_pts(self.get_warp(proposal), 
-                            np.array([[-.5,-.5],[.5,-.5],[.5,.5],[-.5,.5]]).T)
-
-    def proposal_image(self, img):
-        return sample_region(img, apply_to_pts(self.get_warp(), self.pts))
-
-    def error_image(self, img):
-        return np.abs(self.proposal_image() - self.template).reshape(self.res)
-
-
-
