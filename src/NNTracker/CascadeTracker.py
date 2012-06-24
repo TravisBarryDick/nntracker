@@ -1,8 +1,31 @@
+"""
+Author: Travis Dick (travis.barry.dick@gmail.com)
+"""
+
 from TrackerBase import *
 
 class CascadeTracker(TrackerBase):
 
     def __init__(self, trackers):
+        """ Allows multiple trackers to be combined in series.
+
+        Given a sequence of tracking algorithms, the CascadeTracker
+        will use each tracker to compute an incremental update to
+        the region proposed by the previous tracker. This allows us
+        to combine different algorithms in a "coarse-to-fine" tracking
+        scheme, where first we roughly take care of large motions and
+        then utilize some very precise trackers for the final alignment.
+
+        Arguments:
+        ----------
+        trackers : [TrackerBase]
+          trackers is a list of objects each implementing the TrackerBase
+          interface.       
+
+        See Also:
+        ---------
+        TrackerBase
+        """
         self.trackers = trackers
         self.initialized = False
         
