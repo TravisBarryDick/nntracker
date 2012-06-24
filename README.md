@@ -4,11 +4,11 @@ Nearest Neighbour Tracking Algorithm
 ROS Example:
 ------------
 
-roscore
-rosrun uvc_camera camera_node # publishes images on "/image_raw"
-rosrun NNTracker interactive_node.py # reads images from "/image_raw" and publishes 
-	   			   					 # roi information to "/roi_NNTracker"
-rxplot /roi_NNTracker/cmx /roi_NNTracker/cmy
+    roscore
+    rosrun uvc_camera camera_node # publishes images on "/image_raw"
+    rosrun NNTracker interactive_node.py # reads images from "/image_raw" and publishes 
+                                         # roi information to "/roi_NNTracker"
+    rxplot /roi_NNTracker/cmx /roi_NNTracker/cmy
 
 Python Example:
 ---------------
@@ -46,8 +46,7 @@ You must also have the following dependencies installed:
 - OpenCV (with python bindings)
 - FLANN (with python bindings)
 
-Note: The binary distributions of flann that I can find do not
-      come with the python binding. If you build from
-	  source they are installed by defualt. To check to make sure
-	  you have them, in a python shell type:
-	    <code> import pyflann </code>
+Note: The binary distributions of flann that I can find do not come
+with the python binding. If you build from source they are installed
+by defualt. To check to make sure you have them, in a python shell
+type: <code> import pyflann </code>
