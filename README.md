@@ -1,8 +1,17 @@
 Nearest Neighbour Tracking Algorithm
 ====================================
 
-Example:
---------
+ROS Example:
+------------
+
+roscore
+rosrun uvc_camera camera_node # publishes images on "/image_raw"
+rosrun NNTracker interactive_node.py # reads images from "/image_raw" and publishes 
+	   			   					 # roi information to "/roi_NNTracker"
+rxplot /roi_NNTracker/cmx /roi_NNTracker/cmy
+
+Python Example:
+---------------
     from NNTracker import *
     
     # Initialization:
@@ -15,25 +24,30 @@ Example:
     while True:
         frame = grab_frame()
         tracker.update(frame)
-        draw_region(frame, tracker.get_corners())
+        draw_region(frame, tracker.get_region())
         imshow(frame)
 
 The functions <code> grab_frame() </code>, <code>
-grab_initialization_rectangle() </code> and <code> imshow </code> are
+grab_initialization_rectangle() </code> and <code> imshow() </code> are
 just placeholders to simplify the example.
+
+For a complete example, look at src/NNTracker/Main.py.
 
 Installation:
 -------------
 
-There is no special installation procedure. You can obtain a copy of
-the source code by cloning this git repository:
+Place this directory in your ros_workspace. 
 
-    git clone git://github.com/TravisBarryDick/NNTracker.git
-
-You must also install the following dependencies:
+You must also have the following dependencies installed:
 
 - Python
 - Numpy
-- Scipy (scipy.weave in particular)
-- OpenCV with python bindings
-- FLANN with python bindings
+- Scipy
+- OpenCV (with python bindings)
+- FLANN (with python bindings)
+
+Note: The binary distributions of flann that I can find do not
+      come with the python binding. If you build from
+	  source they are installed by defualt. To check to make sure
+	  you have them, in a python shell type:
+	    <code> import pyflann </code>
