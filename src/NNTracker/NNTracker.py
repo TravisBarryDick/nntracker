@@ -1,3 +1,8 @@
+"""
+Implementation of the Nearest Neighbour Tracking Algorithm.
+Author: Travis Dick (travis.barry.dick@gmail.com)
+"""
+
 import itertools
 import random
 
@@ -14,6 +19,27 @@ class NNTracker(TrackerBase):
 
     def __init__(self, n_samples, n_iterations=1, res=(20,20),
                  warp_generator=lambda:random_homography(0.05, 0.1)):
+        """ An implemetation of the Nearest Neighbour Tracker. 
+
+        Parameters:
+        -----------
+        n_samples : integer
+          The number of sample motions to generate. Higher values will improve tracking
+          accuracy but increase running time.
+        
+        n_iterations : integer
+          The number of times to update the tracker state per frame. Larger numbers
+          may improve convergence but will increase running time.
+        
+        res : (integer, integer)
+          The desired resolution of the template image. Higher values allow for more
+          precise tracking but increase running time.
+
+        warp_generator : () -> (3,3) numpy matrix.
+          A function that randomly generates a homography. The distribution should
+          roughly mimic the types of motions that you expect to observe in the 
+          tracking sequence. random_homography seems to work well in most applications.
+        """
         self.n_samples = n_samples
         self.n_iterations = n_iterations
         self.res = res
@@ -29,7 +55,7 @@ class NNTracker(TrackerBase):
     def initialize(self, img, region):
         self.set_region(region)
         self.template = sample_and_normalize(img, apply_to_pts(self.get_warp(), self.pts))
-        self.warp_index = WarpIndex(self.n_samples, self.warp_generator, img, self.pts, self.get_warp())
+        self.warp_index = _WarpIndex(self.n_samples, self.warp_generator, img, self.pts, self.get_warp())
         self.initialized = True
 
     def is_initialized(self):
@@ -50,7 +76,8 @@ class NNTracker(TrackerBase):
     def get_region(self):
         return apply_to_pts(self.get_warp(), np.array([[-.5,-.5],[.5,-.5],[.5,.5],[-.5,.5]]).T)
 
-class WarpIndex:
+class _WarpIndex:
+    """ Utility class for building and querying the set of reference images/warps. """
     def __init__(self, n_samples, warp_generator, img, pts, initial_warp):
         n_points = pts.shape[1]
         print "Sampling Warps..."
