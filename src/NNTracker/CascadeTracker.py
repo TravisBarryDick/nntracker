@@ -25,6 +25,7 @@ class CascadeTracker(TrackerBase):
         See Also:
         ---------
         TrackerBase
+        ParallelTracker
         """
         self.trackers = trackers
         self.initialized = False

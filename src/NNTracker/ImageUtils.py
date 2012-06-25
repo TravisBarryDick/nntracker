@@ -147,3 +147,19 @@ def sample_and_normalize(img, pts):
     result = sample_region(img, pts);
     result -= result.mean()
     return result
+
+def res_to_pts(res):
+    """ Makes an array of evenly spaced points in the centered unit square.
+
+    Parameters:
+    -----------
+    res : (width integer, height integer)
+      width is the number of points horizontally and height is the number
+      of points vertically.
+
+    Returns:
+    --------
+    A (2, width*height) numpy array where each column is one of the grid points.
+    """
+    return np.array(list(itertools.product(np.linspace(-.5, .5, res[0]), 
+                                           np.linspace(-.5, .5, res[1])))).T

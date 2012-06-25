@@ -39,6 +39,10 @@ class NNTracker(TrackerBase):
           A function that randomly generates a homography. The distribution should
           roughly mimic the types of motions that you expect to observe in the 
           tracking sequence. random_homography seems to work well in most applications.
+          
+        See Also:
+        ---------
+        TrackerBase
         """
         self.n_samples = n_samples
         self.n_iterations = n_iterations
@@ -46,8 +50,7 @@ class NNTracker(TrackerBase):
         self.warp_generator = warp_generator
         self.n_points = np.prod(res)
         self.initialized = False
-        self.pts = np.array(list(itertools.product(np.linspace(-.5, .5, self.res[0]), 
-                                                   np.linspace(-.5, .5, self.res[1])))).T
+        self.pts = res_to_pts(self.res)
     
     def set_region(self, corners):
         self.proposal = square_to_corners_warp(corners)
@@ -75,6 +78,35 @@ class NNTracker(TrackerBase):
 
     def get_region(self):
         return apply_to_pts(self.get_warp(), np.array([[-.5,-.5],[.5,-.5],[.5,.5],[-.5,.5]]).T)
+
+class NNTrackerSlave(NNTracker):
+    
+    def __init__(self, master):
+        """ An NNTracker class that does not maintain it's own warp_index.
+
+        The purpose of this class is to allow multiple instances of NNTracker
+        to share the same warp_index. This is a runtime and memory savings when
+        we want to have multiple trackers following the same target (like when
+        we have multiple proposals).
+
+        Parameters:
+        -----------
+        master : NNTracker
+          The NNTracker instance that this tracker gets its warp_index from.
+        
+        See Also:
+        ---------
+        NNTracker
+        """
+        NNTracker.__init__(self, master.n_samples, master.n_iterations, master.res, master.warp_generator)
+        self.master = master
+    
+    def initialize(self, img, region):
+        pass
+    
+    def update(self, img):
+        self.warp_index = self.master.warp_index
+        return NNTracker.update(self, img)
 
 class _WarpIndex:
     """ Utility class for building and querying the set of reference images/warps. """
