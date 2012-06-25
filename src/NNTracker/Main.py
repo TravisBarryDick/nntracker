@@ -12,6 +12,7 @@ import numpy as np
 from CascadeTracker import *
 from Homography import *
 from InteractiveTracking import *
+from MultiProposalTracker import *
 from NNTracker import *
 
 class StandaloneTrackingApp(InteractiveTrackingApp):
@@ -31,6 +32,9 @@ class StandaloneTrackingApp(InteractiveTrackingApp):
 if __name__ == '__main__':
     coarse_tracker = NNTracker(12000, 2, res=(20,20))
     fine_tracker = NNTracker(2000, 3, res=(50,50), warp_generator = lambda:random_homography(0.005, 0.0001))
-    tracker = CascadeTracker([coarse_tracker, fine_tracker])
+    cascade_tracker = CascadeTracker([coarse_tracker, fine_tracker])
+    tracker = MultiProposalTracker(cascade_tracker, 4, 1.2, 
+                                   lambda:random_homography(0.001, 0.001))
+
     app = StandaloneTrackingApp(cv2.VideoCapture(0), tracker)
     app.run()

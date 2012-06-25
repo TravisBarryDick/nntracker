@@ -17,8 +17,8 @@ class ParallelTracker(TrackerBase):
         select the one with the lowest discrepancy between the template
         and the proposed region. 
 
-        Arguments:
-        ----------
+        Parameters:
+        -----------
         trackers : [TrackerBase]
           trackers is a list of objects, each implementing the TrackerBase
           interface.
@@ -27,6 +27,7 @@ class ParallelTracker(TrackerBase):
         ---------
         TrackerBase
         CascadeTracker
+        MultiProposalTracker
         """
         self.trackers = trackers
         self.initialized = False

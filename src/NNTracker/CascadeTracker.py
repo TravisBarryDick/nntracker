@@ -16,8 +16,8 @@ class CascadeTracker(TrackerBase):
         scheme, where first we roughly take care of large motions and
         then utilize some very precise trackers for the final alignment.
 
-        Arguments:
-        ----------
+        Parameters:
+        -----------
         trackers : [TrackerBase]
           trackers is a list of objects each implementing the TrackerBase
           interface.       
@@ -25,6 +25,7 @@ class CascadeTracker(TrackerBase):
         See Also:
         ---------
         TrackerBase
+        MultiProposalTracker
         ParallelTracker
         """
         self.trackers = trackers
