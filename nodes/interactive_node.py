@@ -44,9 +44,9 @@ class RosInteractiveTrackingApp(InteractiveTrackingApp):
 
 if __name__ == '__main__':
     coarse_tracker = NNTracker(12000, 2, res=(20,20))
-    fine_tracker = NNTracker(2000, 3, res=(50,50), warp_generator = lambda:random_homography(0.005, 0.0001))
+    fine_tracker = NNTracker(2000, 3, res=(50,50), warp_generator = 
+                             lambda:random_homography(0.005, 0.0001))
     tracker = CascadeTracker([coarse_tracker, fine_tracker])
-
     app = RosInteractiveTrackingApp(tracker)
     rospy.spin()
     app.cleanup()

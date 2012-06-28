@@ -18,7 +18,7 @@ from TrackerBase import *
 class NNTracker(TrackerBase):
 
     def __init__(self, n_samples, n_iterations=1, res=(20,20),
-                 warp_generator=lambda:random_homography(0.05, 0.1)):
+                 warp_generator=lambda:random_homography(0.07, 0.06)):
         """ An implemetation of the Nearest Neighbour Tracker. 
 
         Parameters:
@@ -67,8 +67,8 @@ class NNTracker(TrackerBase):
     def update(self, img):
         if not self.is_initialized(): return None
         for i in xrange(self.n_iterations):
-            warped_pts = apply_to_pts(self.proposal, self.pts)
-            sampled_img = sample_and_normalize(img, warped_pts)
+            #warped_pts = apply_to_pts(self.proposal, self.pts)
+            sampled_img = sample_and_normalize(img, self.pts, warp=self.proposal)
             self.proposal = self.proposal * self.warp_index.best_match(sampled_img)
             self.proposal /= self.proposal[2,2]
         return self.proposal
@@ -79,35 +79,6 @@ class NNTracker(TrackerBase):
     def get_region(self):
         return apply_to_pts(self.get_warp(), np.array([[-.5,-.5],[.5,-.5],[.5,.5],[-.5,.5]]).T)
 
-class NNTrackerSlave(NNTracker):
-    
-    def __init__(self, master):
-        """ An NNTracker class that does not maintain it's own warp_index.
-
-        The purpose of this class is to allow multiple instances of NNTracker
-        to share the same warp_index. This is a runtime and memory savings when
-        we want to have multiple trackers following the same target (like when
-        we have multiple proposals).
-
-        Parameters:
-        -----------
-        master : NNTracker
-          The NNTracker instance that this tracker gets its warp_index from.
-        
-        See Also:
-        ---------
-        NNTracker
-        """
-        NNTracker.__init__(self, master.n_samples, master.n_iterations, master.res, master.warp_generator)
-        self.master = master
-    
-    def initialize(self, img, region):
-        pass
-    
-    def update(self, img):
-        self.warp_index = self.master.warp_index
-        return NNTracker.update(self, img)
-
 class _WarpIndex:
     """ Utility class for building and querying the set of reference images/warps. """
     def __init__(self, n_samples, warp_generator, img, pts, initial_warp):
@@ -117,7 +88,8 @@ class _WarpIndex:
         print "Sampling Images..."
         self.images = np.empty((n_points, n_samples))
         for i,w in enumerate(self.warps):
-            self.images[:,i] = sample_and_normalize(img, apply_to_pts(initial_warp * w.I, pts))
+            self.images[:,i] = sample_and_normalize(img, pts, initial_warp * w.I)
+            #self.images[:,i] = sample_and_normalize(img, apply_to_pts(initial_warp * w.I, pts))
         print "Building FLANN Index..."
         pyflann.set_distance_type("manhattan")
         self.flann = pyflann.FLANN()

@@ -72,7 +72,7 @@ def to_grayscale(img):
                  compiler='gcc')
     return grayscale
 
-def sample_region(img, pts, result=None):
+def sample_region(img, pts, warp=np.eye(3), result=None):
     """ Samples the image intenisty at a collection of points.
 
     Notes: 
@@ -101,6 +101,7 @@ def sample_region(img, pts, result=None):
     """
     num_pts = pts.shape[1]
     (height, width) = img.shape
+    w = warp
     if result == None: result = np.empty(num_pts)
     support_code = \
     """
@@ -124,16 +125,19 @@ def sample_region(img, pts, result=None):
     code = \
     """
     for (int i = 0; i < num_pts; i++) {
-      result(i) = bilinear_interp(img, width, height, pts(0,i), pts(1,i));
+      double d = w(2,0)*pts(0,i) + w(2,1)*pts(1,i) + w(2,2);
+      double x = (w(0,0)*pts(0,i) + w(0,1)*pts(1,i) + w(0,2)) / d;
+      double y = (w(1,0)*pts(0,i) + w(1,1)*pts(1,i) + w(1,2)) / d;
+      result(i) = bilinear_interp(img, width, height, x, y);
     }
     """
-    weave.inline(code, ["img", "result", "pts", "num_pts", "width", "height"],
+    weave.inline(code, ["img", "result", "w", "pts", "num_pts", "width", "height"],
                  support_code=support_code, headers=["<cmath>"],
                  type_converters=converters.blitz,
                  compiler='gcc')
     return result
 
-def sample_and_normalize(img, pts):
+def sample_and_normalize(img, pts, warp=np.eye(3)):
     """ Samples the image intensity at a collection of points 
     and normalizes the result.
 
@@ -144,7 +148,7 @@ def sample_and_normalize(img, pts):
     ---------
     sample_region
     """
-    result = sample_region(img, pts);
+    result = sample_region(img, pts, warp);
     result -= result.mean()
     return result
 

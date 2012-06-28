@@ -3,3 +3,5 @@
 *.DS_Store
 presentation
 presentation/*
+example_figures
+example_figures/*
