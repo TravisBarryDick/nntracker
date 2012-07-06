@@ -55,6 +55,7 @@ CMakeFiles/ROSBUILD_genmsg_cpp: ../msg_gen/cpp/include/NNTracker/NNTrackerROI.h
 ../msg_gen/cpp/include/NNTracker/NNTrackerROI.h: /opt/ros/fuerte/share/roscpp/manifest.xml
 ../msg_gen/cpp/include/NNTracker/NNTrackerROI.h: /opt/ros/fuerte/stacks/vision_opencv/opencv2/manifest.xml
 ../msg_gen/cpp/include/NNTracker/NNTrackerROI.h: /opt/ros/fuerte/stacks/vision_opencv/cv_bridge/manifest.xml
+../msg_gen/cpp/include/NNTracker/NNTrackerROI.h: /home/travis/ros_workspace/flann/manifest.xml
 	$(CMAKE_COMMAND) -E cmake_progress_report /home/travis/ros_workspace/NNTracker/build/CMakeFiles $(CMAKE_PROGRESS_1)
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold "Generating ../msg_gen/cpp/include/NNTracker/NNTrackerROI.h"
 	/opt/ros/fuerte/share/roscpp/rosbuild/scripts/genmsg_cpp.py /home/travis/ros_workspace/NNTracker/msg/NNTrackerROI.msg

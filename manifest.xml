@@ -1,16 +1,25 @@
 <package>
-  <description brief="travis_tracker">
-	
+  <description brief="NNTracker">
+	Implementation of the nearest neighbour tracking algorithm.
   </description>
   
-  <author> Travis Dick, Camilo Perez, Romeo Tatsambon </author>
+  <author> 
+	Travis Dick, 
+	Camilo Perez, 
+	Azad Shademan, 
+	Romeo Tatsambon  
+  </author>
 
   <license>BSD</license>
 
   <depend package="rospy"/>
   <depend package="sensor_msgs"/>
   <depend package="cv_bridge"/>
-
+  <depend package="flann" />
+  <!-- 
+  To use the system installed flann library just make an empty
+  flann package. Everything should work fine.
+  -->
 </package>
 
 

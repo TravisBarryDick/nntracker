@@ -329,14 +329,14 @@ NNTracker_INCLUDE_DIRS:INTERNAL=/opt/ros/fuerte/include;/opt/ros/fuerte/include/
 NNTracker_LDFLAGS_OTHER:INTERNAL=-Wl,-rpath,/opt/ros/fuerte/stacks/vision_opencv/cv_bridge/lib
 NNTracker_LIBRARIES:INTERNAL=sensor_msgs;cv_bridge;roscpp;rostime;rosconsole;roscpp_serialization;xmlrpcpp;opencv_calib3d;opencv_contrib;opencv_core;opencv_features2d;opencv_flann;opencv_gpu;opencv_highgui;opencv_imgproc;opencv_legacy;opencv_ml;opencv_nonfree;opencv_objdetect;opencv_photo;opencv_stitching;opencv_ts;opencv_video;opencv_videostab
 NNTracker_LIBRARY_DIRS:INTERNAL=/opt/ros/fuerte/lib;/opt/ros/fuerte/stacks/vision_opencv/cv_bridge/lib
-NNTracker_cached_manifest_list:INTERNAL=/home/travis/ros_workspace/NNTracker/manifest.xml;/opt/ros/fuerte/share/roslang/manifest.xml;/opt/ros/fuerte/share/rospy/manifest.xml;/opt/ros/fuerte/share/geometry_msgs/manifest.xml;/opt/ros/fuerte/share/sensor_msgs/manifest.xml;/opt/ros/fuerte/share/roscpp/manifest.xml;/opt/ros/fuerte/stacks/vision_opencv/opencv2/manifest.xml;/opt/ros/fuerte/stacks/vision_opencv/cv_bridge/manifest.xml
+NNTracker_cached_manifest_list:INTERNAL=/home/travis/ros_workspace/NNTracker/manifest.xml;/opt/ros/fuerte/share/roslang/manifest.xml;/opt/ros/fuerte/share/rospy/manifest.xml;/opt/ros/fuerte/share/geometry_msgs/manifest.xml;/opt/ros/fuerte/share/sensor_msgs/manifest.xml;/opt/ros/fuerte/share/roscpp/manifest.xml;/opt/ros/fuerte/stacks/vision_opencv/opencv2/manifest.xml;/opt/ros/fuerte/stacks/vision_opencv/cv_bridge/manifest.xml;/home/travis/ros_workspace/flann/manifest.xml
 NNTracker_temp:INTERNAL=-Wl,-rpath,/opt/ros/fuerte/stacks/vision_opencv/cv_bridge/lib
 //ADVANCED property for variable: PYTHON_EXECUTABLE
 PYTHON_EXECUTABLE-ADVANCED:INTERNAL=1
 _rosbuild_EXPORTS:INTERNAL=
-_rosbuild_cached_flag_time:INTERNAL=1339191644.67
+_rosbuild_cached_flag_time:INTERNAL=1341607897.05
 _roslang_LANGS:INTERNAL=roslisp;rospy;roscpp
-_rospack_deps_manifests_invoke_result:INTERNAL=/opt/ros/fuerte/share/roslang/manifest.xml;/opt/ros/fuerte/share/rospy/manifest.xml;/opt/ros/fuerte/share/geometry_msgs/manifest.xml;/opt/ros/fuerte/share/sensor_msgs/manifest.xml;/opt/ros/fuerte/share/roscpp/manifest.xml;/opt/ros/fuerte/stacks/vision_opencv/opencv2/manifest.xml;/opt/ros/fuerte/stacks/vision_opencv/cv_bridge/manifest.xml
+_rospack_deps_manifests_invoke_result:INTERNAL=/opt/ros/fuerte/share/roslang/manifest.xml;/opt/ros/fuerte/share/rospy/manifest.xml;/opt/ros/fuerte/share/geometry_msgs/manifest.xml;/opt/ros/fuerte/share/sensor_msgs/manifest.xml;/opt/ros/fuerte/share/roscpp/manifest.xml;/opt/ros/fuerte/stacks/vision_opencv/opencv2/manifest.xml;/opt/ros/fuerte/stacks/vision_opencv/cv_bridge/manifest.xml;/home/travis/ros_workspace/flann/manifest.xml
 _rospack_msgsrv_gen_invoke_result:INTERNAL=
 roscpp_CMAKE:INTERNAL=/opt/ros/fuerte/share/roscpp/rosbuild/roscpp.cmake
 roslib_path:INTERNAL=/opt/ros/fuerte/share/roslib

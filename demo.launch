@@ -1,6 +1,0 @@
-<launch>
-
-  <node name="camera" pkg="uvc_camera" type="camera_node" />
-  <node name="tracker" pkg="NNTracker" type="interactive_node.py" />
-
-</launch>

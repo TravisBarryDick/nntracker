@@ -57,6 +57,7 @@ CMakeFiles/ROSBUILD_genmsg_lisp: ../msg_gen/lisp/_package_NNTrackerROI.lisp
 ../msg_gen/lisp/NNTrackerROI.lisp: /opt/ros/fuerte/share/roscpp/manifest.xml
 ../msg_gen/lisp/NNTrackerROI.lisp: /opt/ros/fuerte/stacks/vision_opencv/opencv2/manifest.xml
 ../msg_gen/lisp/NNTrackerROI.lisp: /opt/ros/fuerte/stacks/vision_opencv/cv_bridge/manifest.xml
+../msg_gen/lisp/NNTrackerROI.lisp: /home/travis/ros_workspace/flann/manifest.xml
 	$(CMAKE_COMMAND) -E cmake_progress_report /home/travis/ros_workspace/NNTracker/build/CMakeFiles $(CMAKE_PROGRESS_1)
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold "Generating ../msg_gen/lisp/NNTrackerROI.lisp, ../msg_gen/lisp/_package.lisp, ../msg_gen/lisp/_package_NNTrackerROI.lisp"
 	/opt/ros/fuerte/share/roslisp/rosbuild/scripts/genmsg_lisp.py /home/travis/ros_workspace/NNTracker/msg/NNTrackerROI.msg
