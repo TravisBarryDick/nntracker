@@ -36,7 +36,7 @@ class RosInteractiveTrackingApp(InteractiveTrackingApp):
 
     def callback(self, data):
         img = np.array(self.bridge.imgmsg_to_cv(data, "bgr8"))
-        if not self.on_frame(img): rospy.signal_shutdown("User Exited")
+        self.on_frame(img)
         if self.tracker.is_initialized() and not self.paused:
             message = NNTrackerROI()
             region = self.tracker.get_region()

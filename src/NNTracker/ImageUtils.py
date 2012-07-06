@@ -12,7 +12,7 @@ from scipy.weave import converters
 
 from Homography import *
 
-def draw_region(img, corners, color, thickness=1):
+def draw_region(img, corners, color, thickness=1, draw_x=False):
     """ Draws a warped rectangle in an image.
 
     Parameters:
@@ -24,23 +24,27 @@ def draw_region(img, corners, color, thickness=1):
       An array whose columns are the corners of the warped
       rectangle. Points should be in (counter-)clockwise order.
 
-    color: scalar or (b,g,r) triple
+    color : scalar or (b,g,r) triple
       The color to make the region. In black and white images
       a scalar between 0 and 1 specifies intensity, and in 
       color images, a (b,g,r) triple (0 <= b,g,r <= 255) specifies
       the color.
 
-    thickness: integer
+    thickness : integer
       The width in pixels of the lines used.
+      
+    draw_x : boolean
+      Whether or not to connect opposite corners.
     """
     for i in xrange(4):
         p1 = (int(corners[0,i]), int(corners[1,i]))
         p2 = (int(corners[0,(i+1)%4]), int(corners[1,(i+1)%4]))
         cv2.line(img, p1, p2, color, thickness)
-    for i in xrange(4):
-        p1 = (int(corners[0,i]), int(corners[1,i]))
-        p2 = (int(corners[0,(i+2)%4]), int(corners[1,(i+2)%4]))
-        cv2.line(img, p1, p2, color, thickness)
+    if draw_x:
+        for i in xrange(4):
+            p1 = (int(corners[0,i]), int(corners[1,i]))
+            p2 = (int(corners[0,(i+2)%4]), int(corners[1,(i+2)%4]))
+            cv2.line(img, p1, p2, color, thickness)
 
 def to_grayscale(img):
     """ Converts an bgr8 image into a grayscale image.
