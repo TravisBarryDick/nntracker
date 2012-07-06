@@ -27,6 +27,9 @@ class RosInteractiveTrackingApp(InteractiveTrackingApp):
         self.roi_pub = rospy.Publisher("/roi_NNTracker", NNTrackerROI)
         self.bridge = CvBridge()
 
+    def run(self):
+        rospy.spin()
+
     def callback(self, data):
         img = np.array(self.bridge.imgmsg_to_cv(data, "bgr8"))
         self.on_frame(img)
@@ -48,7 +51,7 @@ if __name__ == '__main__':
                              lambda:random_homography(0.005, 0.0001))
     tracker = CascadeTracker([coarse_tracker, fine_tracker])
     app = RosInteractiveTrackingApp(tracker)
-    rospy.spin()
+    app.run()
     app.cleanup()
 
 

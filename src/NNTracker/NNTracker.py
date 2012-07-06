@@ -3,9 +3,6 @@ Implementation of the Nearest Neighbour Tracking Algorithm.
 Author: Travis Dick (travis.barry.dick@gmail.com)
 """
 
-import itertools
-import random
-
 import numpy as np
 import pyflann
 from scipy import weave
@@ -43,6 +40,7 @@ class NNTracker(TrackerBase):
         See Also:
         ---------
         TrackerBase
+        BakerMatthewsICTracker
         """
         self.n_samples = n_samples
         self.n_iterations = n_iterations
@@ -57,7 +55,7 @@ class NNTracker(TrackerBase):
 
     def initialize(self, img, region):
         self.set_region(region)
-        self.template = sample_and_normalize(img, apply_to_pts(self.get_warp(), self.pts))
+        self.template = sample_and_normalize(img, self.pts, self.get_warp())
         self.warp_index = _WarpIndex(self.n_samples, self.warp_generator, img, self.pts, self.get_warp())
         self.initialized = True
 

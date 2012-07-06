@@ -101,7 +101,7 @@ def sample_region(img, pts, warp=np.eye(3), result=None):
     """
     num_pts = pts.shape[1]
     (height, width) = img.shape
-    w = warp
+    w = np.asarray(warp)
     if result == None: result = np.empty(num_pts)
     support_code = \
     """
@@ -152,7 +152,45 @@ def sample_and_normalize(img, pts, warp=np.eye(3)):
     result -= result.mean()
     return result
 
-def res_to_pts(res):
+def image_gradient(img, pts, warp=None):
+    """ Computes the spatial image gradient at a collection of points.
+
+    Parameters:
+    -----------
+    img : (n,m) numpy array
+      The image whose gradient is to be computed
+    
+    pts : (2,k) numpy array
+      An array where each column contains the pixel coordinates of a point.
+
+    warp : (3,3) numpy array (Homography)
+      A warp to apply to the points before samping them from the image. This
+      is a change of coordinates from the template coordinate frame into the
+      pixel image coordinate frame. If no warp is specified, then we assume
+      that the template coordinate frame is the centered unit square.
+
+    Returns:
+    --------
+    A (k,2) numpy array where the ith row is the gradient [dI/dx, dI/dy] 
+    sampled at pts[:,i].
+    """
+    
+    if warp == None:
+        (height, width) = img.shape
+        warp = np.matrix([[width,0,0],[0,height,0],[0,0,1]]) * \
+            np.array([[1,0,0.5], [0,1,0.5], [0,0,1]])
+
+    pts = apply_to_pts(warp, pts)
+
+    xo = apply_to_pts(warp.I, np.array([1,0]).reshape(-1,1))
+    yo = apply_to_pts(warp.I, np.array([0,1]).reshape(-1,1))
+
+    dx = (sample_region(img, pts + xo) - sample_region(img, pts - xo))/2
+    dy = (sample_region(img, pts + yo) - sample_region(img, pts - yo))/2
+    
+    return np.array([dx,dy]).T
+
+def res_to_pts(res, ul=(-.5,-.5), lr=(.5,.5)):
     """ Makes an array of evenly spaced points in the centered unit square.
 
     Parameters:
@@ -165,5 +203,6 @@ def res_to_pts(res):
     --------
     A (2, width*height) numpy array where each column is one of the grid points.
     """
-    return np.array(list(itertools.product(np.linspace(-.5, .5, res[0]), 
-                                           np.linspace(-.5, .5, res[1])))).T
+    return np.array(list(map(lambda (x,y):(y,x), 
+                             itertools.product(np.linspace(ul[0], lr[0], res[0]), 
+                                               np.linspace(ul[1], lr[1], res[1]))))).T

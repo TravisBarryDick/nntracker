@@ -15,14 +15,14 @@ def random_warp(width, height, sigma):
     perturbations = np.random.randn(2,4) * sigma
     return compute_homography(corners, corners + perturbations)
     
-def warp_image(img, pts, w, result):
-    result.shape = (-1,)
-    sample_region(img, pts, np.array(w.I), result)
-    result.shape = (height, width)
+# def warp_image(img, pts, w, result):
+#     result.shape = (-1,)
+#     sample_region(img, pts, np.array(w.I), result)
+#     result.shape = (height, width)
 
-# def warp_image(img, w, result):
-#     if result == None: result = np.empty_like(img)
-#     return cv2.warpPerspective(img, w, img.shape, dst=result)
+def warp_image(img, w, result):
+    if result == None: result = np.empty_like(img)
+    return cv2.warpPerspective(img, w, img.shape, dst=result)
 
 lenna = to_grayscale(cv2.imread("lenna.png"))
 (height, width) = lenna.shape
@@ -34,21 +34,19 @@ warped_lenna = np.empty_like(lenna)
 coarse_tracker = NNTracker(12000, 1, res=(20,20))
 fine_tracker = NNTracker(2000, 5, res=(100,100), warp_generator = lambda:random_homography(0.005, 0.0001))
 tracker = CascadeTracker([coarse_tracker, fine_tracker])
-# tracker = MultiProposalTracker(cascade_tracker, 4, 1.2, 
-#                                    lambda:random_homography(0.001, 0.001))
 
 centerx = lenna.shape[0]/2
 centery = lenna.shape[1]/2
-target_corners = np.array([(centerx - 100, centery - 100),
-                           (centerx + 100, centery - 100),
-                           (centerx + 100, centery + 100),
-                           (centerx - 100, centery + 100)]).T
+target_corners = np.array([(centerx - 50, centery - 50),
+                           (centerx + 50, centery - 50),
+                           (centerx + 50, centery + 50),
+                           (centerx - 50, centery + 50)]).T
 
 tracker.initialize(lenna, target_corners)
 
 for i in xrange(1000):
-    w = random_warp(lenna.shape[0], lenna.shape[1], 8)
-    warp_image(lenna,pts,w, warped_lenna)
+    w = random_warp(lenna.shape[0], lenna.shape[1], 5)
+    warp_image(lenna,np.asarray(w).astype(np.float64), warped_lenna)
     tracker.set_region(target_corners)
     tracker.update(warped_lenna)
     draw_region(warped_lenna, target_corners, 0.3, 3)

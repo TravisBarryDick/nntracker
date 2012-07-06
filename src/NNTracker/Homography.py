@@ -179,3 +179,5 @@ def random_translation_and_scale(sigma_t, sigma_s):
     ty = np.random.normal(0, sigma_t)
     s = np.random.normal(1, sigma_s)
     return np.matrix([[1,0,tx],[0,1,ty],[0,0,1/s]])
+
+
