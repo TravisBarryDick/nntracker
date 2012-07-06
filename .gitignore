@@ -5,3 +5,4 @@ untracked
 build
 bin
 msg_gen
+src/NNTracker/msg
