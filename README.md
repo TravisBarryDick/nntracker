@@ -5,10 +5,9 @@ ROS Example:
 ------------
 
     roscore
-    rosrun uvc_camera camera_node # publishes images on "/image_raw"
-    rosrun NNTracker interactive_node.py # reads images from "/image_raw" and publishes 
-                                         # roi information to "/roi_NNTracker"
-    rxplot /roi_NNTracker/cmx /roi_NNTracker/cmy
+    rosrun some_camera_driver
+    rosrun NNTracker interactive_node.py _image:=the_image_topic _roi_topic:=/roi
+    rxplot /roi/cmx /roi/cmy
 
 Python Example:
 ---------------
