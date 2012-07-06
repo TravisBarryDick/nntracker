@@ -23,8 +23,12 @@ class RosInteractiveTrackingApp(InteractiveTrackingApp):
     def __init__(self, tracker):
         InteractiveTrackingApp.__init__(self, tracker, "ROS Interactive NN Tracker")
         rospy.init_node("NNTracker")
-        self.image_sub = rospy.Subscriber("/image_raw", Image, self.callback, queue_size=1)
-        self.roi_pub = rospy.Publisher("/roi_NNTracker", NNTrackerROI)
+        
+        image_topic = rospy.get_param("~image", "/camera/image_raw")
+        roi_topic = rospy.get_param("~roi_topic", "roi_NNTracker")
+
+        self.image_sub = rospy.Subscriber(image_topic, Image, self.callback, queue_size=1)
+        self.roi_pub = rospy.Publisher(roi_topic, NNTrackerROI)
         self.bridge = CvBridge()
 
     def run(self):
@@ -32,7 +36,7 @@ class RosInteractiveTrackingApp(InteractiveTrackingApp):
 
     def callback(self, data):
         img = np.array(self.bridge.imgmsg_to_cv(data, "bgr8"))
-        self.on_frame(img)
+        if not self.on_frame(img): rospy.signal_shutdown("User Exited")
         if self.tracker.is_initialized() and not self.paused:
             message = NNTrackerROI()
             region = self.tracker.get_region()
