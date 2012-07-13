@@ -55,7 +55,7 @@ class SCVNNTracker(NNTracker):
 
         self.intensity_map = self.intensity_map + 0.1*(new_map - self.intensity_map)
 
-        cv2.imshow("template", cv2.resize(self.template.reshape(self.res).astype(np.uint8), (256,256))
+        cv2.imshow("template", cv2.resize(self.template.reshape(self.res).astype(np.uint8), (256,256)))
         cv2.imshow("current", cv2.resize(sampled_img.reshape(self.res).astype(np.uint8), (256,256)))
         cv2.imshow("expected", cv2.resize(expected_template(self.intensity_map, sampled_img).reshape(self.res).astype(np.uint8),(256,256)))
 
