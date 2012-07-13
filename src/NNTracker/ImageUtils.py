@@ -51,13 +51,13 @@ def to_grayscale(img):
 
     Parameters:
     -----------
-    img : (n,m,3) numpy array
-      The input image, with 3 channels. Entries should take
-      values in the range (0,256).
+    img : (n,m,d) numpy array
+      The input image, with d channels. Entries should take
+      values in the range {0,1,...,255}.
     
     Returns:
     --------
-    An (n,m) numpy array with entries between 0 and 1.
+    An (n,m) numpy array with entries {0,1,...,255}
     """
     (height, width, depth) = img.shape
     grayscale = np.empty((height,width), dtype=np.float64)
@@ -67,7 +67,7 @@ def to_grayscale(img):
       for (int j = 0; j < width; j++) {
         double mean = 0;
         for (int k = 0; k < depth; k++) mean += img(i,j,k);
-        grayscale(i,j) = mean / depth / 256;
+        grayscale(i,j) = mean / depth;
       }
     }
     """
@@ -82,7 +82,7 @@ def sample_region(img, pts, warp=np.eye(3), result=None):
     Notes: 
     ------
       - Only works with grayscale images. 
-      - All points outside the bounds of the image have intensity 0.5.
+      - All points outside the bounds of the image have intensity 128.
 
     Parameters:
     -----------
@@ -116,7 +116,7 @@ def sample_region(img, pts, warp=np.eye(3), result=None):
       const int ux = ceil(x);
       const int ly = floor(y);
       const int uy = ceil(y);
-      if (lx < 0 || ux >= width || ly < 0 || uy >= height) return 0.5;
+      if (lx < 0 || ux >= width || ly < 0 || uy >= height) return 128;
       const double ulv = img(ly,lx);
       const double urv = img(ly,ux);
       const double lrv = img(uy,ux);
@@ -153,7 +153,7 @@ def sample_and_normalize(img, pts, warp=np.eye(3)):
     sample_region
     """
     result = sample_region(img, pts, warp);
-    result -= result.mean()
+    #result -= result.mean()
     return result
 
 def image_gradient(img, pts, warp=None):

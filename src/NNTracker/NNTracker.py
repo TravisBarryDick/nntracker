@@ -89,7 +89,7 @@ class _WarpIndex:
             self.images[:,i] = sample_and_normalize(img, pts, initial_warp * w.I)
             #self.images[:,i] = sample_and_normalize(img, apply_to_pts(initial_warp * w.I, pts))
         print "Building FLANN Index..."
-        pyflann.set_distance_type("manhattan")
+        #pyflann.set_distance_type("manhattan")
         self.flann = pyflann.FLANN()
         self.flann.build_index(self.images.T, algorithm='kdtree', trees=10)
         print "Done!"
