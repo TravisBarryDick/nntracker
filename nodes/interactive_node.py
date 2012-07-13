@@ -16,6 +16,7 @@ from NNTracker.CascadeTracker import *
 from NNTracker.Homography import *
 from NNTracker.InteractiveTracking import *
 from NNTracker.NNTracker import *
+from NNTracker.SCVNNTracker import *
 from NNTracker.Polygons import *
 
 class RosInteractiveTrackingApp(InteractiveTrackingApp):
@@ -50,9 +51,9 @@ class RosInteractiveTrackingApp(InteractiveTrackingApp):
         #cv2.waitKey(1)
 
 if __name__ == '__main__':
-    coarse_tracker = NNTracker(12000, 2, res=(20,20))
-    fine_tracker = NNTracker(2000, 3, res=(50,50), warp_generator = 
-                             lambda:random_homography(0.005, 0.0001))
+    coarse_tracker = SCVNNTracker(12000, 2, res=(20,20))
+    fine_tracker = SCVNNTracker(2000, 3, res=(50,50), warp_generator = 
+                                lambda:random_homography(0.005, 0.0001))
     tracker = CascadeTracker([coarse_tracker, fine_tracker])
     app = RosInteractiveTrackingApp(tracker)
     app.run()
