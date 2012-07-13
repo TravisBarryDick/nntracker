@@ -42,6 +42,7 @@ class SCVNNTracker(NNTracker):
 
     def __init__(self, *args, **kwargs):
         NNTracker.__init__(self, *args, **kwargs)
+        self.intensity_map = np.arange(256)
 
 
     def initialize(self, img, region):
@@ -50,7 +51,10 @@ class SCVNNTracker(NNTracker):
 
     def update_intensity_map(self, img):
         sampled_img = sample_and_normalize(img, self.pts, warp=self.proposal)
-        self.intensity_map = get_intensity_map(sampled_img, self.template)
+        new_map = get_intensity_map(sampled_img, self.template)
+
+        self.intensity_map = self.intensity_map + 0.1*(new_map - self.intensity_map)
+
         cv2.imshow("current", cv2.resize(sampled_img.reshape(self.res).astype(np.uint8), (256,256)))
         cv2.imshow("expected", cv2.resize(expected_template(self.intensity_map, sampled_img).reshape(self.res).astype(np.uint8),(256,256)))
 
