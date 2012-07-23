@@ -1,7 +1,9 @@
 """
 Implementation of the Baker-Matthews Inverse Compositional Tracking Algorithm.
 
-S. Baker and I. Matthews, "Equivalence and efficiency of image alignment algorithms", Computer Vision and Pattern Recognition, 2001. CVPR 2001. Proceedings of the 2001 IEEE Computer Society Conference on, vol. 1, pp. I-1090-I-1097 vol. 1, 2001.
+S. Baker and I. Matthews, "Equivalence and efficiency of image alignment algorithms", 
+Computer Vision and Pattern Recognition, 2001. CVPR 2001. Proceedings of the 2001 IEEE 
+Computer Society Conference on, vol. 1, pp. I-1090-I-1097 vol. 1, 2001.
 
 Author: Travis Dick (travis.barry.dick@gmail.com)
 """
@@ -15,7 +17,7 @@ from TrackerBase import *
 class BakerMatthewsICTracker(TrackerBase):
 
     def __init__(self, max_iters, threshold=0.01, res=(20,20)):
-        """ An implementation of the inverse composititionl tracker from Baker and Matthews
+        """ An implementation of the inverse composititionl tracker from Baker and Matthews.
 
         Parameters:
         -----------
@@ -39,29 +41,46 @@ class BakerMatthewsICTracker(TrackerBase):
         self.max_iters = max_iters
         self.res = res
         self.pts = res_to_pts(self.res)
+        self.n_pts = np.prod(res)
         self.initialized = False
 
     def set_region(self, corners):
         self.proposal = square_to_corners_warp(corners)
         
     def initialize(self, img, region):
-        n_pts = self.pts.shape[1]
         self.set_region(region)
         self.template = sample_region(img, self.pts, self.get_warp())
-        GT = np.asmatrix(image_gradient(img, self.pts, self.get_warp()))
-        self.JIT = np.empty((n_pts, 8))
-        for i in xrange(n_pts):
-            self.JIT[i,:] = GT[i,:] * _make_hom_jacobian(self.pts[:,i])
-        self.JIT = np.asmatrix(self.JIT)
+        
+        # Image Gradient:
+        nabla_T = image_gradient(img, self.pts, self.get_warp())
+        # Steepest Descent Images:
+        #self.VT_dW_dp = np.empty((self.n_pts, 8))
+        #for i in xrange(self.n_pts):
+        #    self.VT_dW_dp[i,:] = np.asmatrix(nabla_T[i,:]) * _make_hom_jacobian(self.pts[:,i])
+        #self.VT_dW_dp = np.asmatrix(self.VT_dW_dp)
+        self.VT_dW_dp = _estimate_jacobian(img, self.pts, self.proposal)
+        # Hessian:
+        
+        # H = np.zeros((8,8))
+        # for i in xrange(self.n_pts):
+        #     H += np.asmatrix(self.VT_dW_dp[i,:].T) * self.VT_dW_dp[i,:]
+        # self.H_inv = np.asmatrix(H).I
+
+        H = self.VT_dW_dp.T * self.VT_dW_dp
+        self.H_inv = H.I
+
         self.initialized = True
 
     def update(self, img):
         if not self.is_initialized(): return None
+
         for i in xrange(self.max_iters):
-            error_image = (sample_region(img, self.pts, self.get_warp()) - self.template).reshape((-1,1))
-            update_parameters = np.linalg.lstsq(self.JIT, error_image)[0]
-            self.proposal = self.proposal * _make_hom(update_parameters).I
-            
+            IWxp = sample_region(img, self.pts, self.get_warp())
+            error_img = np.asmatrix(IWxp - self.template)
+            update = np.asmatrix(self.VT_dW_dp.T)*error_img.reshape((-1,1))
+            update = self.H_inv * np.asmatrix(update).reshape((-1,1))
+            self.proposal = self.proposal * _make_hom(update).I
+
     def is_initialized(self):
         return self.initialized
 
@@ -71,6 +90,17 @@ class BakerMatthewsICTracker(TrackerBase):
     def get_region(self):
         return apply_to_pts(self.get_warp(), np.array([[-.5,-.5],[.5,-.5],[.5,.5],[-.5,.5]]).T)
 
+def _estimate_jacobian(img, pts, initial_warp, eps=1e-10):
+    n_pts = pts.shape[1]
+    def f(p):
+        W = initial_warp * _make_hom(p)
+        return sample_region(img, pts, W)
+    jacobian = np.empty((n_pts,8))
+    for i in xrange(0,8):
+        o = np.zeros(8)
+        o[i] = eps
+        jacobian[:,i] = (f(o) - f(-o)) / (2*eps)
+    return np.asmatrix(jacobian)
 
 def _make_hom(p):
     return np.matrix([[1 + p[0],   p[1]  , p[2]],

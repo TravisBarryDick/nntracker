@@ -71,7 +71,7 @@ def apply_to_pts(homography, pts):
     An (2,n) numpy array, where each column is the image of the
     corresponding column of pts under the givn homography.
     """
-    (h,w) = pts.shape
+    (h,w) = pts.shape    
     result = np.empty((h+1,w))
     result[:h] = pts
     result[-1].fill(1)
@@ -80,7 +80,7 @@ def apply_to_pts(homography, pts):
     return np.asarray(result[:h])
 
 def compute_homography(in_pts, out_pts):
-    """ Uses the DLT algorithm to compute homographies.
+    """ Uses the direct linear transform to compute homographies.
 
     Parameters:
     -----------
@@ -113,6 +113,7 @@ def compute_homography(in_pts, out_pts):
     homography /= homography[2,2]
     return np.asmatrix(homography)
 
+_square = np.array([[-.5,-.5],[.5,-.5],[.5,.5],[-.5,.5]]).T
 def square_to_corners_warp(corners):
     """ Computes the homography from the centered unit square to 
     the quadrilateral given by the corners matrix.
@@ -132,8 +133,7 @@ def square_to_corners_warp(corners):
     ---------
     compute_homography
     """
-    square = np.array([[-.5,-.5],[.5,-.5],[.5,.5],[-.5,.5]]).T    
-    return compute_homography(square, corners)
+    return compute_homography(_square, corners)
 
 def random_homography(sigma_d, sigma_t):
     """ Generates a random "small" homography.

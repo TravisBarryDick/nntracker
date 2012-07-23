@@ -9,7 +9,7 @@ from TrackerBase import *
 
 class MultiProposalTracker(TrackerBase):
     
-    def __init__(self, tracker, n_proposals, replace_factor, warp_generator):
+    def __init__(self, tracker, n_proposals, replace_factor, warp_generator, res=None):
         """ Runs a single tracker with multiple proposals.
 
         Given a single tracker, the MultiProposalTracker will
@@ -44,6 +44,7 @@ class MultiProposalTracker(TrackerBase):
         self.n_proposals = n_proposals
         self.replace_factor = replace_factor
         self.warp_generator = warp_generator
+        self.res = res
         self.proposals = []
         self.best_proposal = None
         self.initialized = False
@@ -64,7 +65,8 @@ class MultiProposalTracker(TrackerBase):
         return sample_and_normalize(img, warped_pts)
     
     def initialize(self, img, region):
-        self.res = _approximate_resolution(region)
+        if self.res == None:
+            self.res = _approximate_resolution(region)
         self.pts = res_to_pts(self.res)
         self.tracker.initialize(img, region)
         self.set_region(region)

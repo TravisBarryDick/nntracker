@@ -186,8 +186,8 @@ def image_gradient(img, pts, warp=None):
 
     pts = apply_to_pts(warp, pts)
 
-    xo = apply_to_pts(warp.I, np.array([1,0]).reshape(-1,1))
-    yo = apply_to_pts(warp.I, np.array([0,1]).reshape(-1,1))
+    xo = np.array([1,0]).reshape(-1,1)
+    yo = np.array([0,1]).reshape(-1,1)
 
     dx = (sample_region(img, pts + xo) - sample_region(img, pts - xo))/2
     dy = (sample_region(img, pts + yo) - sample_region(img, pts - yo))/2
