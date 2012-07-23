@@ -12,7 +12,6 @@ from InteractiveTracking import *
 from MultiProposalTracker import *
 from NNTracker import *
 from ParallelTracker import *
-from SCVNNTracker import *
 
 class StandaloneTrackingApp(InteractiveTrackingApp):
     """ A demo program that uses OpenCV to grab frames. """
@@ -29,9 +28,12 @@ class StandaloneTrackingApp(InteractiveTrackingApp):
         self.cleanup()
 
 if __name__ == '__main__':
-    coarse_tracker = NNTracker(12000, 1, res=(40,40))
-    fine_tracker = SCVNNTracker(2000, 3, res=(40,40), warp_generator = lambda:random_homography(0.001, 0.0001))
-    tracker = BakerMatthewsICTracker(20, res=(100,100))
-    cascade_tracker = CascadeTracker([coarse_tracker, fine_tracker])
+    coarse_tracker = NNTracker(12000, 2, res=(40,40), use_scv=True)
+    fine_tracker = NNTracker(2000, 3, res=(40,40), 
+                             warp_generator = lambda:random_homography(0.005, 0.0001),
+                             use_scv=True)
+    finer_tracker = BakerMatthewsICTracker(20, res=(40,40), use_scv=True)
+    tracker = CascadeTracker([coarse_tracker, fine_tracker, finer_tracker])
     app = StandaloneTrackingApp(cv2.VideoCapture(0), tracker)
     app.run()
+    app.cleanup()

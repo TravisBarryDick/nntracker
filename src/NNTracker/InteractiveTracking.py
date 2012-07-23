@@ -46,12 +46,12 @@ class InteractiveTrackingApp:
     def display(self, img):
         annotated_img = img.copy()
         if self.tracker.is_initialized():
-            draw_region(annotated_img, self.tracker.get_region(), (255,0,0), 2)
+            draw_region(annotated_img, self.tracker.get_region(), (0,255,0), 2)
         if self.m_start != None and self.m_end != None:
             ul = (min(self.m_start[0],self.m_end[0]), min(self.m_start[1],self.m_end[1]))
             lr = (max(self.m_start[0],self.m_end[0]), max(self.m_start[1],self.m_end[1]))            
             corners = np.array([ ul, [lr[0],ul[1]], lr, [ul[0],lr[1]]]).T            
-            draw_region(annotated_img, corners, (0,255,0), 1)
+            draw_region(annotated_img, corners, (255,0,0), 1)
         cv2.imshow(self.name, annotated_img)
 
     def mouse_handler(self, evt,x,y,arg,extra):

@@ -10,12 +10,14 @@ from scipy.weave import converters
 
 from Homography import *
 from ImageUtils import *
+from SCVUtils import *
 from TrackerBase import *
 
 class NNTracker(TrackerBase):
 
     def __init__(self, n_samples, n_iterations=1, res=(20,20),
-                 warp_generator=lambda:random_homography(0.07, 0.06)):
+                 warp_generator=lambda:random_homography(0.07, 0.06),
+                 use_scv=False):
         """ An implemetation of the Nearest Neighbour Tracker. 
 
         Parameters:
@@ -49,6 +51,7 @@ class NNTracker(TrackerBase):
         self.n_points = np.prod(res)
         self.initialized = False
         self.pts = res_to_pts(self.res)
+        self.use_scv=use_scv
     
     def set_region(self, corners):
         self.proposal = square_to_corners_warp(corners)
@@ -67,6 +70,7 @@ class NNTracker(TrackerBase):
         for i in xrange(self.n_iterations):
             #warped_pts = apply_to_pts(self.proposal, self.pts)
             sampled_img = sample_and_normalize(img, self.pts, warp=self.proposal)
+            if self.use_scv: sampled_img = scv_expectation(sampled_img, self.template)
             self.proposal = self.proposal * self.warp_index.best_match(sampled_img)
             self.proposal /= self.proposal[2,2]
         return self.proposal

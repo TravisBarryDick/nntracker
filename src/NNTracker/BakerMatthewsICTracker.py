@@ -12,11 +12,12 @@ import numpy as np
 
 from Homography import *
 from ImageUtils import *
+from SCVUtils import *
 from TrackerBase import *
 
 class BakerMatthewsICTracker(TrackerBase):
 
-    def __init__(self, max_iters, threshold=0.01, res=(20,20)):
+    def __init__(self, max_iters, threshold=0.01, res=(20,20), use_scv=False):
         """ An implementation of the inverse composititionl tracker from Baker and Matthews.
 
         Parameters:
@@ -43,6 +44,7 @@ class BakerMatthewsICTracker(TrackerBase):
         self.pts = res_to_pts(self.res)
         self.n_pts = np.prod(res)
         self.initialized = False
+        self.use_scv = use_scv
 
     def set_region(self, corners):
         self.proposal = square_to_corners_warp(corners)
@@ -76,6 +78,7 @@ class BakerMatthewsICTracker(TrackerBase):
 
         for i in xrange(self.max_iters):
             IWxp = sample_region(img, self.pts, self.get_warp())
+            if self.use_scv: IWxp = scv_expectation(IWxp, self.template)
             error_img = np.asmatrix(IWxp - self.template)
             update = np.asmatrix(self.VT_dW_dp.T)*error_img.reshape((-1,1))
             update = self.H_inv * np.asmatrix(update).reshape((-1,1))
