@@ -82,6 +82,7 @@ class BakerMatthewsICTracker(TrackerBase):
             error_img = np.asmatrix(IWxp - self.template)
             update = np.asmatrix(self.VT_dW_dp.T)*error_img.reshape((-1,1))
             update = self.H_inv * np.asmatrix(update).reshape((-1,1))
+            update = np.asarray(update).squeeze()
             self.proposal = self.proposal * _make_hom(update).I
 
     def is_initialized(self):
