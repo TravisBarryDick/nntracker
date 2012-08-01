@@ -4,9 +4,9 @@ on OpenCV VideoCapture to grab frames from the camera.
 
 Author: Travis Dick (travis.barry.dick@gmail.com)
 """
-
 from BakerMatthewsICTracker import *
 from CascadeTracker import *
+from ESMTracker import *
 from Homography import *
 from InteractiveTracking import *
 from MultiProposalTracker import *
@@ -28,12 +28,9 @@ class StandaloneTrackingApp(InteractiveTrackingApp):
         self.cleanup()
 
 if __name__ == '__main__':
-    coarse_tracker = NNTracker(12000, 2, res=(40,40), use_scv=True)
-    fine_tracker = NNTracker(2000, 3, res=(40,40), 
-                             warp_generator = lambda:random_homography(0.005, 0.0001),
-                             use_scv=True)
-    finer_tracker = BakerMatthewsICTracker(20, res=(40,40), use_scv=True)
-    tracker = CascadeTracker([coarse_tracker, fine_tracker, finer_tracker])
+    coarse_tracker = NNTracker(10000, 2, res=(40,40), use_scv=True)
+    fine_tracker = ESMTracker(5, res=(40,40), use_scv=True)
+    tracker = CascadeTracker([coarse_tracker, fine_tracker])
     app = StandaloneTrackingApp(cv2.VideoCapture(0), tracker)
     app.run()
     app.cleanup()

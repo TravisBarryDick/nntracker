@@ -16,7 +16,7 @@ from scipy.weave import converters
 
 from ImageUtils import *
 
-def _compute_intensity_map(src, dst):
+def scv_intensity_map(src, dst):
     conditional_probability = np.zeros((256,256))
     intensity_map = np.arange(256, dtype=np.float64)
     n = len(src)
@@ -44,8 +44,6 @@ def _compute_intensity_map(src, dst):
                  compiler='gcc')
     return intensity_map
 
-def scv_expectation(original, target):
-    """ Computes E[original | target] """
-    intensity_map = _compute_intensity_map(original, target)
+def scv_expectation(original, intensity_map):
     return intensity_map[np.floor(original).astype(np.int)]
     

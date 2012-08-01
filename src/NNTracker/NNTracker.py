@@ -60,6 +60,7 @@ class NNTracker(TrackerBase):
         self.set_region(region)
         self.template = sample_and_normalize(img, self.pts, self.get_warp())
         self.warp_index = _WarpIndex(self.n_samples, self.warp_generator, img, self.pts, self.get_warp())
+        self.intensity_map = None
         self.initialized = True
 
     def is_initialized(self):
@@ -70,9 +71,10 @@ class NNTracker(TrackerBase):
         for i in xrange(self.n_iterations):
             #warped_pts = apply_to_pts(self.proposal, self.pts)
             sampled_img = sample_and_normalize(img, self.pts, warp=self.proposal)
-            if self.use_scv: sampled_img = scv_expectation(sampled_img, self.template)
+            if self.use_scv and self.intensity_map != None: sampled_img = scv_expectation(sampled_img, self.intensity_map)
             self.proposal = self.proposal * self.warp_index.best_match(sampled_img)
             self.proposal /= self.proposal[2,2]
+        if self.use_scv: self.intensity_map = scv_intensity_map(sample_region(img, self.pts, self.get_warp()), self.template)
         return self.proposal
 
     def get_warp(self):

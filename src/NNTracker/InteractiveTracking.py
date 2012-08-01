@@ -40,6 +40,7 @@ class InteractiveTrackingApp:
         self.m_end = None
         self.gray_img = None
         self.paused = False
+        self.img = None
         cv2.namedWindow(self.name)
         cv2.setMouseCallback(self.name, self.mouse_handler)
 
@@ -74,9 +75,10 @@ class InteractiveTrackingApp:
     def on_frame(self, img):
         if not self.paused:
             self.img = img
-            self.gray_img = cv2.GaussianBlur(to_grayscale(img), (5,5), 3.0)
+            self.gray_img = cv2.GaussianBlur(to_grayscale(img), (5,5), 3)
+            #self.gray_img = to_grayscale(img)
             self.tracker.update(self.gray_img)
-        self.display(self.img)
+        if self.img != None: self.display(self.img)
         key = cv.WaitKey(7)
         if key == ord(' '): self.paused = not self.paused
         elif key > 0: return False
