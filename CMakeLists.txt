@@ -29,5 +29,5 @@ rosbuild_genmsg()
 #rosbuild_add_executable(example examples/example.cpp)
 #target_link_libraries(example ${PROJECT_NAME})
 
-add_custom_command(COMMAND  ${PYTHON_EXECUTABLE} setup.py build_ext --build-lib ../../bin --cython-c-in-temp
+add_custom_command(OUTPUT c_exts COMMAND  ${PYTHON_EXECUTABLE} setup.py build_ext --build-lib ../../bin --cython-c-in-temp
 				  DEPENDS src/NNTracker/*.pyx WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
