@@ -11,6 +11,7 @@ Author: Travis Dick (travis.barry.dick@gmail.com)
 
 from cython.view cimport array
 
+import cv2
 cimport numpy as np
 import numpy as np
 from scipy.linalg import expm
@@ -148,6 +149,35 @@ cpdef double[:,:] sample_pts_grad_sl3(double[:,:] img, int resx, int resy, doubl
             i += 1
     return result
 
+cdef double[:] scv_intensity_map(double[:] src, double[:] dst):
+    cdef int n_pts = src.shape[0]
+    cdef double[:,:] P = np.zeros((256,256), dtype=np.float64)
+    cdef int k, i, j
+    for k in range(n_pts):
+        i = <int>src[k]
+        j = <int>dst[k]
+        P[i,j] += 1
+    
+    cdef double[:] intensity_map = np.zeros(256, dtype=np.float64)
+    cdef double normalizer, total
+    for i in range(256):
+        normalizer = 0
+        total = 0
+        for j in range(256):
+            total += j * P[i,j]
+            normalizer += P[i,j]
+        if normalizer > 0: intensity_map[i] = total / normalizer
+        else: intensity_map[i] = i
+    return intensity_map
+
+cdef double[:] scv_expected_img(double[:] img, double[:] intensity_map):
+    cdef int n_pts = img.shape[0]
+    cdef double[:] result = np.empty(n_pts, dtype=np.float64)
+    cdef int i
+    for i in range(n_pts):
+        result[i] = intensity_map[<int>img[i]]
+    return result
+
 cdef normalize_hom(double[:,:] H):
     cdef int i, j
     for i in range(3):
@@ -202,3 +232,14 @@ def apply_to_pts(homography, pts):
     result[:h] = result[:h] / result[-1]
     result[np.isnan(result)] = 0
     return np.asarray(result[:h])
+
+def draw_region(img, corners, color, thickness=1, draw_x=False):
+    for i in xrange(4):
+        p1 = (int(corners[0,i]), int(corners[1,i]))
+        p2 = (int(corners[0,(i+1)%4]), int(corners[1,(i+1)%4]))
+        cv2.line(img, p1, p2, color, thickness)
+    if draw_x:
+        for i in xrange(4):
+            p1 = (int(corners[0,i]), int(corners[1,i]))
+            p2 = (int(corners[0,(i+2)%4]), int(corners[1,(i+2)%4]))
+            cv2.line(img, p1, p2, color, thickness)

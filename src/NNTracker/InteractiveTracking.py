@@ -6,10 +6,7 @@ import cv
 import cv2
 import numpy as np
 
-from CascadeTracker import *
-from Homography import *
-from ImageUtils import *
-from NNTracker import *
+from utility import *
 
 class InteractiveTrackingApp:
     def __init__(self, tracker, name="vis"):
@@ -75,7 +72,7 @@ class InteractiveTrackingApp:
     def on_frame(self, img):
         if not self.paused:
             self.img = img
-            self.gray_img = cv2.GaussianBlur(to_grayscale(img), (5,5), 3)
+            self.gray_img = cv2.GaussianBlur(np.asarray(to_grayscale(img)), (5,5), 3)
             #self.gray_img = to_grayscale(img)
             self.tracker.update(self.gray_img)
         if self.img != None: self.display(self.img)
