@@ -50,7 +50,35 @@ class TrackerBase:
         ---------
         set_region
         """
-        self.set_region(_rectangle_to_region(ul,lr))
+        self.set_region(rectangle_to_region(ul,lr))
+
+    def get_region(self): 
+        """ Returns the four corners of the target region. See set_region
+        for more information on the format.
+
+        See Also:
+        ---------
+        set_region
+        """
+        raise NotImplementedError()
+
+    def get_warp(self):
+        """ Gets the tracker's current warp.
+        
+        See Also:
+        ---------
+        set_warp
+        """
+        raise NotImplementedError()
+
+    def set_warp(self, warp):
+        """ Sets the tracker's current warp.
+
+        See Also:
+        ---------
+        get_warp
+        """
+        raise NotImplementedError()
 
     def initialize(self, img, region):
         """ Initializes the tracker.
@@ -82,7 +110,7 @@ class TrackerBase:
         ---------
         initialize
         """
-        self.initialize(img, _rectangle_to_region(ul,lr))
+        self.initialize(img, rectangle_to_region(ul,lr))
     
     def update(self, img): 
         """ Updates the tracker state. 
@@ -100,15 +128,5 @@ class TrackerBase:
         """ Returns whether the tracker is initialized yet or not. """
         raise NotImplementedError()
 
-    def get_region(self): 
-        """ Returns the four corners of the target region. See set_region
-        for more information on the format.
-
-        See Also:
-        ---------
-        set_region
-        """
-        raise NotImplementedError()
-
-def _rectangle_to_region(ul, lr):
-    return np.array([ul, [lr[0],ul[1]], lr, [ul[0],lr[1]]]).T
+def rectangle_to_region(ul, lr):
+    return np.array([ul, [lr[0],ul[1]], lr, [ul[0],lr[1]]], dtype=np.float64).T

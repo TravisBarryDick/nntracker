@@ -4,14 +4,9 @@ on OpenCV VideoCapture to grab frames from the camera.
 
 Author: Travis Dick (travis.barry.dick@gmail.com)
 """
-from BakerMatthewsICTracker import *
-from CascadeTracker import *
-from ESMTracker import *
 from Homography import *
 from InteractiveTracking import *
-from MultiProposalTracker import *
-from NNTracker import *
-from ParallelTracker import *
+from TurnkeyTrackers import make_esm, make_nn_GN, make_nn_esm
 
 class StandaloneTrackingApp(InteractiveTrackingApp):
     """ A demo program that uses OpenCV to grab frames. """
@@ -28,9 +23,6 @@ class StandaloneTrackingApp(InteractiveTrackingApp):
         self.cleanup()
 
 if __name__ == '__main__':
-    coarse_tracker = NNTracker(10000, 2, res=(40,40), use_scv=True)
-    fine_tracker = ESMTracker(5, res=(40,40), use_scv=True)
-    tracker = CascadeTracker([coarse_tracker, fine_tracker])
-    app = StandaloneTrackingApp(cv2.VideoCapture(0), tracker)
+    app = StandaloneTrackingApp(cv2.VideoCapture(0), make_esm(use_scv=True))
     app.run()
     app.cleanup()

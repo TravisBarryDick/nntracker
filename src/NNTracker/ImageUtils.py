@@ -11,6 +11,7 @@ from scipy import weave
 from scipy.weave import converters
 
 from Homography import *
+from WeaveWrapper import *
 
 def draw_region(img, corners, color, thickness=1, draw_x=False):
     """ Draws a warped rectangle in an image.
@@ -59,8 +60,15 @@ def to_grayscale(img):
     --------
     An (n,m) numpy array with entries {0,1,...,255}
     """
-    (height, width, depth) = img.shape
+    height, width, depth = img.shape
     grayscale = np.empty((height,width), dtype=np.float64)
+    vars = {
+        "height"    : height,
+        "width"     : width,
+        "depth"     : depth,
+        "grayscale" : grayscale,
+        "img"       : img
+        }
     code = \
     """
     for (int i = 0; i < height; i++) {
@@ -71,9 +79,7 @@ def to_grayscale(img):
       }
     }
     """
-    weave.inline(code, ['height', 'width', 'depth', 'grayscale', 'img'],
-                 type_converters=converters.blitz,
-                 compiler='gcc')
+    weave_cpp(code, vars)
     return grayscale
 
 def sample_region(img, pts, warp=np.eye(3), result=None):
@@ -104,28 +110,16 @@ def sample_region(img, pts, warp=np.eye(3), result=None):
     sub-pixel coordinates in the provided image.
     """
     num_pts = pts.shape[1]
-    (height, width) = img.shape
-    w = np.asarray(warp)
     if result == None: result = np.empty(num_pts)
-    support_code = \
-    """
-    double bilinear_interp(blitz::Array<double,2> img, int width, int height, double x, double y) {
-      using std::floor;
-      using std::ceil;
-      const int lx = floor(x);
-      const int ux = ceil(x);
-      const int ly = floor(y);
-      const int uy = ceil(y);
-      if (lx < 0 || ux >= width || ly < 0 || uy >= height) return 128;
-      const double ulv = img(ly,lx);
-      const double urv = img(ly,ux);
-      const double lrv = img(uy,ux);
-      const double llv = img(uy,lx);
-      const double dx = x - lx;
-      const double dy = y - ly;
-      return ulv*(1-dx)*(1-dy) + urv*dx*(1-dy) + llv*(1-dx)*dy + lrv*dx*dy;
-    }
-    """
+    vars = {
+        "img"    : img,
+        "result" : result,
+        "w"      : np.asarray(warp),
+        "pts"    : pts,
+        "num_pts": num_pts,
+        "width"  : img.shape[1],
+        "height" : img.shape[0],
+        }
     code = \
     """
     for (int i = 0; i < num_pts; i++) {
@@ -135,25 +129,7 @@ def sample_region(img, pts, warp=np.eye(3), result=None):
       result(i) = bilinear_interp(img, width, height, x, y);
     }
     """
-    weave.inline(code, ["img", "result", "w", "pts", "num_pts", "width", "height"],
-                 support_code=support_code, headers=["<cmath>"],
-                 type_converters=converters.blitz,
-                 compiler='gcc')
-    return result
-
-def sample_and_normalize(img, pts, warp=np.eye(3)):
-    """ Samples the image intensity at a collection of points 
-    and normalizes the result.
-
-    Identical to sample_region, except the result is shifted
-    so that it's components have mean 0.
-
-    See Also:
-    ---------
-    sample_region
-    """
-    result = sample_region(img, pts, warp);
-    #result -= result.mean()
+    weave_cpp(code, vars)
     return result
 
 def image_gradient(img, pts, warp=None):
