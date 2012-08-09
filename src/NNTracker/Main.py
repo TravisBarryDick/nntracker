@@ -23,6 +23,6 @@ class StandaloneTrackingApp(InteractiveTrackingApp):
         self.cleanup()
 
 if __name__ == '__main__':
-    app = StandaloneTrackingApp(cv2.VideoCapture(0), make_esm(use_scv=True))
+    app = StandaloneTrackingApp(cv2.VideoCapture(0), make_nn_GN(use_scv=True))
     app.run()
     app.cleanup()

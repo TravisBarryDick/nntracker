@@ -7,3 +7,5 @@ build
 bin
 msg_gen
 src/NNTracker/msg
+*.so
+src/NNTracker/*.c

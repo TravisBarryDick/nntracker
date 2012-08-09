@@ -5,36 +5,35 @@ parameter settings that seem to work well in typical situations.
 Author: Travis Dick (travis.barry.dick@gmail.com)
 """
 
-from BakerMatthewsICTracker import BakerMatthewsICTracker
-from CascadeTracker import CascadeTracker
+from BMICTracker import BMICTracker
 from ESMTracker import ESMTracker
-from Homography import random_homography
 from NNTracker import NNTracker
+
+from CascadeTracker import CascadeTracker
+from Homography import random_homography
 
 _coarse_warps = lambda: random_homography(0.07, 0.06)
 _fine_warps = lambda: random_homography(0.005, 0.0001)
 _finer_warps = lambda: random_homography(0.0001, 0.0001)
 
-
 def make_pure_nn(use_scv=False, res=(40,40)):
-    coarse_tracker = NNTracker(8000, 1, res, _coarse_warps, use_scv)
-    fine_tracker = NNTracker(5000, 1, res, _fine_warps, use_scv)
-    finer_tracker = NNTracker(2000, 1, res, _finer_warps, use_scv)
-    
-    tracker = CascadeTracker([coarse_tracker, fine_tracker, finer_tracker])
+    t1 = NNTracker(1, 8000, res[0], res[1], 0.07, 0.06)
+    t2 = NNTracker(1, 5000, res[0], res[1], 0.005, 0.0001)
+    t3 = NNTracker(1, 2000, res[0], res[1], 0.0001, 0.0001)
+    tracker = CascadeTracker([t1, t2, t3])
     return tracker
 
 def make_nn_GN(use_scv=False, res=(40,40)):
-    coarse_tracker = NNTracker(8000, 1, res, _coarse_warps, use_scv)
-    fine_tracker = NNTracker(2000, 2, res, _fine_warps, use_scv)
-    finer_tracker = BakerMatthewsICTracker(15, 0.001, res, use_scv)
-    return CascadeTracker([coarse_tracker, fine_tracker, finer_tracker])
+    t1 = NNTracker(1, 8000, res[0], res[1], 0.07, 0.06)
+    t2 = NNTracker(1, 5000, res[0], res[1], 0.005, 0.0001)
+    t3 = BMICTracker(15, 0.001, res[0], res[1])
+    return CascadeTracker([t1, t2, t3])
 
 def make_nn_esm(use_scv=False, res=(40,40)):
-    coarse_tracker = NNTracker(8000, 1, res, _coarse_warps, use_scv)
-    fine_tracker = ESMTracker(15, 0.01, res, use_scv)
-    tracker = CascadeTracker([coarse_tracker, fine_tracker])
+    t1 = NNTracker(1, 8000, res[0], res[1], 0.07, 0.06)
+    t2 = ESMTracker(15, 0.01, res[0], res[1])
+    tracker = CascadeTracker([t1, t2])
     return tracker
 
 def make_esm(use_scv=False, res=(40,40)):
-    return ESMTracker(20, 0.01, res, use_scv)
+    return ESMTracker(20, 0.01, res[0], res[1])
