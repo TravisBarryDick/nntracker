@@ -4,7 +4,6 @@
 .project
 .pydevproject
 build
-bin
 msg_gen
 src/NNTracker/msg
 *.so
