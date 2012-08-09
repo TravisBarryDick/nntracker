@@ -31,3 +31,5 @@ rosbuild_genmsg()
 
 add_custom_command(OUTPUT c_exts COMMAND  ${PYTHON_EXECUTABLE} setup.py build_ext --build-lib ../../bin --cython-c-in-temp
 				  DEPENDS src/NNTracker/*.pyx WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+execute_command(c_exts)
