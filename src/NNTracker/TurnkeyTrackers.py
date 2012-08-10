@@ -20,7 +20,7 @@ def make_pure_nn(use_scv=False, res=(40,40)):
     return tracker
 
 def make_nn_GN(use_scv=False, res=(40,40)):
-    t1 = NNTracker(1, 8000, res[0], res[1], 0.07, 0.06, use_scv)
+    t1 = NNTracker(1, 8000, res[0], res[1], 0.08, 0.08, use_scv)
     t2 = NNTracker(1, 5000, res[0], res[1], 0.005, 0.0001, use_scv)
     t3 = BMICTracker(15, 0.001, res[0], res[1], use_scv)
     return CascadeTracker([t1, t2, t3])

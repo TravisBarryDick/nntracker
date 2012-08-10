@@ -116,7 +116,7 @@ cdef class NNTracker:
         return np.asmatrix(self.current_warp)
 
     cpdef set_region(self, double[:,:] corners):
-        self.proposal = square_to_corners_warp(corners)
+        self.current_warp = square_to_corners_warp(corners)
 
     cpdef get_region(self):
         return apply_to_pts(self.get_warp(), np.array([[-.5,-.5],[.5,-.5],[.5,.5],[-.5,.5]]).T)

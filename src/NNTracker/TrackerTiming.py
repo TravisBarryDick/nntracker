@@ -3,9 +3,9 @@ import timeit
 import cv2
 import numpy as np
 
-from BakerMatthewsICTracker import BakerMatthewsICTracker
+from utility import *
+from BMICTracker import BMICTracker
 from ESMTracker import ESMTracker
-from ImageUtils import to_grayscale
 from NNTracker import NNTracker
 from TrackerBase import rectangle_to_region
 
@@ -40,11 +40,11 @@ def time_search(desired_time, f, img, region, min_v, max_v, sigma=8):
     
     return (best_v, best_time)
 
-img = cv2.resize(to_grayscale(cv2.imread("/Users/travisdick/Desktop/Lenna.png")), (256, 256))
+img = cv2.resize(np.asarray(to_grayscale(cv2.imread("/Users/travisdick/Desktop/Lenna.png"))), (256, 256))
 ul = (256/2-50, 256/2-50)
 lr = (256/2+50, 256/2+50)
 region = rectangle_to_region(ul, lr)
-tracker = ESMTracker(15, -1, (50,50))
+tracker = ESMTracker(15, -1, 50, 50, False)
 tracker.initialize(img, region)
 
 if __name__ == "__main__":
