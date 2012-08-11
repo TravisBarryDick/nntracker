@@ -31,6 +31,7 @@ class InteractiveTrackingApp:
         RosInteractiveTrackingApp
         """
 
+        self.tracking = False
         self.tracker = tracker
         self.name = name
         self.init_with_rectangle = init_with_rectangle
@@ -47,16 +48,17 @@ class InteractiveTrackingApp:
 
     def display(self, img):
         annotated_img = img.copy()
-        if self.tracker.is_initialized():
+        if self.tracker.is_initialized() and self.tracking:
             draw_region(annotated_img, self.tracker.get_region(), (0,255,0), 2)
         if self.init_with_rectangle and self.m_start != None and self.m_end != None:
             ul = (min(self.m_start[0],self.m_end[0]), min(self.m_start[1],self.m_end[1]))
-            lr = (max(self.m_start[0],self.m_end[0]), max(self.m_start[1],self.m_end[1]))            
+            lr = (max(self.m_start[0],self.m_end[0]), max(self.m_start[1],self.m_end[1]))             
             corners = np.array([ ul, [lr[0],ul[1]], lr, [ul[0],lr[1]]]).T            
             draw_region(annotated_img, corners, (255,0,0), 1)
         if not self.init_with_rectangle:
             for pt in self.corner_pts:
                 cv2.circle(annotated_img, pt, 2, (255,0,0), 1)
+
         cv2.imshow(self.name, annotated_img)
 
     def mouse_handler(self, evt,x,y,arg,extra):
@@ -72,8 +74,13 @@ class InteractiveTrackingApp:
                     self.display(self.img)
                     cv2.waitKey(1)
                     corners = np.array(self.corner_pts, dtype=np.float64).T
-                    self.tracker.initialize(self.gray_img, corners)
+                    if not self.tracking:
+                        self.tracker.initialize(self.gray_img, corners)
+                        self.tracking = True
+                    else:
+                        self.tracker.set_region(corners)
                     self.corner_pts = []
+
 
         elif evt == cv2.EVENT_MOUSEMOVE and self.m_start != None:
             if self.init_with_rectangle:
@@ -83,9 +90,15 @@ class InteractiveTrackingApp:
                 self.m_end = (x,y)
                 ul = (min(self.m_start[0],self.m_end[0]), min(self.m_start[1],self.m_end[1]))
                 lr = (max(self.m_start[0],self.m_end[0]), max(self.m_start[1],self.m_end[1]))
-                self.tracker.initialize_with_rectangle(self.gray_img, ul, lr)
+                if not self.tracking:
+                    self.tracker.initialize_with_rectangle(self.gray_img, ul, lr)
+                else: 
+                    self.tracker.set_region(np.array([ ul, [lr[0],ul[1]], lr, [ul[0],lr[1]]]).T)
                 self.m_start, self.m_end = None, None
+                self.tracking = True
                 self.paused = False
+
+    
 
     def on_frame(self, img):
         if not self.paused:
@@ -96,6 +109,7 @@ class InteractiveTrackingApp:
         if self.img != None: self.display(self.img)
         key = cv.WaitKey(7)
         if key == ord(' '): self.paused = not self.paused
+        elif key == ord('c'): self.tracking = False
         elif key > 0: return False
         return True
 

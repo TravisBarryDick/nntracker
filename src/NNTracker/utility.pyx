@@ -185,6 +185,37 @@ cdef normalize_hom(double[:,:] H):
             H[i,j] = H[i,j] / H[2,2]
     
 
+cpdef double[:,:] compute_homography(double[:,:] in_pts, double[:,:] out_pts):
+    cdef int num_pts = in_pts.shape[1]
+    cdef double[:,:] constraint_matrix = np.empty((num_pts*2,9), dtype=np.float64)
+    cdef int i, r1, r2
+    for i in range(num_pts):
+        r1 = 2*i
+        constraint_matrix[r1,0] = 0
+        constraint_matrix[r1,1] = 0
+        constraint_matrix[r1,2] = 0
+        constraint_matrix[r1,3] = -in_pts[0,i]
+        constraint_matrix[r1,4] = -in_pts[1,i]
+        constraint_matrix[r1,5] = -1
+        constraint_matrix[r1,6] = out_pts[1,i] * in_pts[0,i]
+        constraint_matrix[r1,7] = out_pts[1,i] * in_pts[1,i]
+        constraint_matrix[r1,8] = out_pts[1,i]
+
+        r2 = 2*i + 1
+        constraint_matrix[r2,0] = in_pts[0,i]
+        constraint_matrix[r2,1] = in_pts[1,i]
+        constraint_matrix[r2,2] = 1
+        constraint_matrix[r2,3] = 0
+        constraint_matrix[r2,4] = 0
+        constraint_matrix[r2,5] = 0
+        constraint_matrix[r2,6] = -out_pts[0,i] * in_pts[0,i]
+        constraint_matrix[r2,7] = -out_pts[0,i] * in_pts[1,i]
+        constraint_matrix[r2,8] = -out_pts[0,i]
+    U,S,V = np.linalg.svd(constraint_matrix)
+    cdef double[:,:] H = V[8].reshape(3,3) / V[8][-1]
+    return H
+        
+
 # ---------- Legacy Codes From Previous Implementation ---------- #
 # TODO: Replace these with optimized versions. The only operations
 #       we need are compute_homography, square_to_corners_warp, and
@@ -204,20 +235,20 @@ def dehomogenize(pts):
     results[:h-1] = pts[:h-1]/pts[h-1]
     return results
 
-def compute_homography(in_pts, out_pts):
-    num_pts = in_pts.shape[1]
-    in_pts = homogenize(in_pts)
-    out_pts = homogenize(out_pts)
-    constraint_matrix = np.empty((num_pts*2, 9))
-    for i in xrange(num_pts):
-        p = in_pts[:,i]
-        q = out_pts[:,i]
-        constraint_matrix[2*i,:] = np.concatenate([[0,0,0], -p, q[1]*p], axis=1)
-        constraint_matrix[2*i+1,:] = np.concatenate([p, [0,0,0], -q[0]*p], axis=1)
-    U,S,V = np.linalg.svd(constraint_matrix)
-    homography = V[8].reshape((3,3))
-    homography /= homography[2,2]
-    return np.asmatrix(homography)
+# def compute_homography(in_pts, out_pts):
+#     num_pts = in_pts.shape[1]
+#     in_pts = homogenize(in_pts)
+#     out_pts = homogenize(out_pts)
+#     constraint_matrix = np.empty((num_pts*2, 9))
+#     for i in xrange(num_pts):
+#         p = in_pts[:,i]
+#         q = out_pts[:,i]
+#         constraint_matrix[2*i,:] = np.concatenate([[0,0,0], -p, q[1]*p], axis=1)
+#         constraint_matrix[2*i+1,:] = np.concatenate([p, [0,0,0], -q[0]*p], axis=1)
+#     U,S,V = np.linalg.svd(constraint_matrix)
+#     homography = V[8].reshape((3,3))
+#     homography /= homography[2,2]
+#     return np.asmatrix(homography)
 
 _square = np.array([[-.5,-.5],[.5,-.5],[.5,.5],[-.5,.5]]).T
 def square_to_corners_warp(corners):

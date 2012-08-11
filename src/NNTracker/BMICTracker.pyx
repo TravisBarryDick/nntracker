@@ -34,6 +34,7 @@ cdef class BMICTracker:
         self.initialized = False
 
     cpdef initialize(self, double[:,:] img, double[:,:] region_corners):
+        self.initialized = False
         self.current_warp = square_to_corners_warp(np.asarray(region_corners))
         self.template = np.asarray(sample_pts(img, self.resx, self.resy, self.current_warp))
         self.J = np.asmatrix(sample_pts_grad_sl3(img, self.resx, self.resy, self.current_warp))
@@ -58,6 +59,7 @@ cdef class BMICTracker:
         for i in range(self.max_iters):
             sampled_img = sample_pts(img, self.resx, self.resy, self.current_warp)
             if self.use_scv:
+                if self.intensity_map == None: self.intensity_map = scv_intensity_map(sampled_img, self.template)
                 sampled_img = scv_expected_img(sampled_img, self.intensity_map)
             error = np.asarray(self.template - sampled_img).reshape(-1,1)
             update = self.J.T * error
@@ -75,12 +77,14 @@ cdef class BMICTracker:
 
     cpdef set_warp(self, double[:,:] warp):
         self.current_warp = warp
+        self.intensity_map = None
 
     cpdef double[:,:] get_warp(self):
         return np.asmatrix(self.current_warp)
 
     cpdef set_region(self, double[:,:] corners):
         self.current_warp = square_to_corners_warp(corners)
+        self.intensity_map = None
 
     cpdef get_region(self):
         return apply_to_pts(self.get_warp(), np.array([[-.5,-.5],[.5,-.5],[.5,.5],[-.5,.5]]).T)

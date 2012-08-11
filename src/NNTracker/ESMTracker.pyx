@@ -35,6 +35,7 @@ cdef class ESMTracker:
         self.initialized = False
 
     cpdef initialize(self, double[:,:] img, double[:,:] region_corners):
+        self.initialized = False
         self.current_warp = square_to_corners_warp(np.asarray(region_corners))
         self.template = np.asarray(sample_pts(img, self.resx, self.resy, self.current_warp))
         self.Je = np.asmatrix(sample_pts_grad_sl3(img, self.resx, self.resy, self.current_warp))
@@ -58,6 +59,7 @@ cdef class ESMTracker:
         for i in range(self.max_iters):
             sampled_img = sample_pts(img, self.resx, self.resy, self.current_warp)
             if self.use_scv:
+                if self.intensity_map == None: self.intensity_map = scv_intensity_map(sampled_img, self.template)
                 sampled_img = scv_expected_img(sampled_img, self.intensity_map)
             error = np.asarray(self.template - sampled_img).reshape(-1,1)
             Jpc = sample_pts_grad_sl3(img, self.resx, self.resy, self.current_warp)
@@ -69,17 +71,45 @@ cdef class ESMTracker:
         if self.use_scv:
             sampled_img = sample_pts(img, self.resx, self.resy, self.current_warp)
             self.intensity_map = scv_intensity_map(sampled_img, self.template)
+
+    # This function is used to determine a reasonable distribution on homography
+    # parameters
+    cpdef update_and_return(self, double[:,:] img):
+        if not self.initialized: return None
+        cdef int i
+        cdef double[:,:] Jpc
+        cdef double[:] sampled_img
+        cdef double[:,:] total_update = np.eye(3, dtype=np.float64)
+        for i in range(self.max_iters):
+            sampled_img = sample_pts(img, self.resx, self.resy, self.current_warp)
+            if self.use_scv:
+                sampled_img = scv_expected_img(sampled_img, self.intensity_map)
+            error = np.asarray(self.template - sampled_img).reshape(-1,1)
+            Jpc = sample_pts_grad_sl3(img, self.resx, self.resy, self.current_warp)
+            J = np.asmatrix(Jpc + self.Je) / 2.0
+            update = np.asarray(np.linalg.lstsq(J, error)[0]).squeeze()
+            self.current_warp = mat_mul(self.current_warp, make_hom_sl3(update))
+            total_update = mat_mul(total_update, make_hom_sl3(update))
+            normalize_hom(self.current_warp)
+            if np.sum(np.abs(update)) < self.threshold: break
+        if self.use_scv:
+            sampled_img = sample_pts(img, self.resx, self.resy, self.current_warp)
+            self.intensity_map = scv_intensity_map(sampled_img, self.template)
+        return total_update
+
     cpdef is_initialized(self):
         return self.initialized
 
     cpdef set_warp(self, double[:,:] warp):
         self.current_warp = warp
+        self.intensity_map = None
 
     cpdef double[:,:] get_warp(self):
         return np.asmatrix(self.current_warp)
 
     cpdef set_region(self, double[:,:] corners):
         self.current_warp = square_to_corners_warp(corners)
+        self.intensity_map = None
 
     cpdef get_region(self):
         return apply_to_pts(self.get_warp(), np.array([[-.5,-.5],[.5,-.5],[.5,.5],[-.5,.5]]).T)

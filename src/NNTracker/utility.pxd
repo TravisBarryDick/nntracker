@@ -15,3 +15,5 @@ cdef double[:,:] mat_mul(double[:,:] A, double[:,:] B)
 
 cdef double[:] scv_intensity_map(double[:] img1, double[:] img2)
 cdef double[:] scv_expected_img(double[:] img, double[:] intensity_map)
+
+cpdef double[:,:] compute_homography(double[:,:] in_pts, double[:,:] out_pts)
