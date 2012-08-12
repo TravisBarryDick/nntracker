@@ -3,6 +3,7 @@ Implementation of the Nearest Neighbour Tracking Algorithm.
 Author: Travis Dick (travis.barry.dick@gmail.com)
 """
 
+import os
 import shelve
 import threading
 
@@ -15,7 +16,7 @@ from nntracker.utility import apply_to_pts, square_to_corners_warp
 from nntracker.utility cimport *
 
 _stored_warps_lock = threading.Lock()
-_stored_warps = shelve.open("/Users/travisdick/Desktop/warp_cache")
+_stored_warps = shelve.open(os.path.expanduser("~/warp_cache"))
 
 cdef class _WarpIndex_Flann:
     cdef:
