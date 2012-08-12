@@ -6,9 +6,9 @@ Author: Travis Dick (travis.barry.dick@gmail.com)
 
 """
 
-from utility import *
-from InteractiveTracking import *
-from TurnkeyTrackers import make_esm, make_nn_GN, make_nn_esm
+from nntracker.utility import *
+from nntracker.InteractiveTracking import *
+from nntracker.trackers.TurnkeyTrackers import make_esm, make_nn_GN, make_nn_esm
 
 class StandaloneTrackingApp(InteractiveTrackingApp):
     """ A demo program that uses OpenCV to grab frames. """
@@ -31,7 +31,8 @@ class StandaloneTrackingApp(InteractiveTrackingApp):
             cv2.waitKey(1)
         self.cleanup()
 
+
 if __name__ == '__main__':
-    app = StandaloneTrackingApp(cv2.VideoCapture(0), make_nn_GN(use_scv=True))
+    app = StandaloneTrackingApp(cv2.VideoCapture(0), make_esm(use_scv=True))
     app.run()
     app.cleanup()

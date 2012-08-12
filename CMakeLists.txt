@@ -31,6 +31,5 @@ rosbuild_genmsg()
 
 add_custom_target(c_exts ALL 
   COMMAND ${PYTHON_EXECUTABLE} setup.py build_ext --inplace --cython-c-in-temp
-  COMMAND cp *.so ../../bin
-  DEPENDS src/NNTracker/*.pyx WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/NNTracker)
+  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/src)
 

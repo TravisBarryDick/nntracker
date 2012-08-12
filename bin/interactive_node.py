@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import roslib
-roslib.load_manifest('NNTracker')
+roslib.load_manifest('nntracker')
 
 import sys
 
@@ -11,11 +11,10 @@ import rospy
 from std_msgs.msg import String
 from sensor_msgs.msg import Image, RegionOfInterest, CameraInfo
 
-from NNTracker.TurnkeyTrackers import *
-from NNTracker.msg import NNTrackerROI
-from NNTracker.Homography import *
-from NNTracker.InteractiveTracking import *
-from NNTracker.Polygons import *
+from nntracker.trackers.TurnkeyTrackers import *
+from nntracker.msg import NNTrackerROI
+from nntracker.InteractiveTracking import *
+from nntracker.utility import *
 
 class RosInteractiveTrackingApp(InteractiveTrackingApp):
     

@@ -1,7 +1,3 @@
-# cython: boundscheck=False
-# cython: wraparound=False
-# cython: cdivision=True
-
 """
 Implementation of the Nearest Neighbour Tracking Algorithm.
 Author: Travis Dick (travis.barry.dick@gmail.com)
@@ -10,23 +6,17 @@ Author: Travis Dick (travis.barry.dick@gmail.com)
 import shelve
 import threading
 
+cimport numpy as np
 import numpy as np
+
 import pyflann
 
-from utility import apply_to_pts, square_to_corners_warp
-from utility cimport *
-
-cdef double[:,:] _square = np.array([[-.5,-.5],[.5,-.5],[.5,.5],[-.5,.5]]).T
-cdef double[:,:] _random_homography(double sigma_t, double sigma_d):
-    cdef double[:,:] disturbed = np.random.normal(0,sigma_d, (2,4)) + np.random.normal(0, sigma_t, (2,1)) + _square
-    cdef double[:,:] H = compute_homography(_square, disturbed)
-    return H
+from nntracker.utility import apply_to_pts, square_to_corners_warp
+from nntracker.utility cimport *
 
 _stored_warps_lock = threading.Lock()
 _stored_warps = shelve.open("/Users/travisdick/Desktop/warp_cache")
 
-# Note: The warp index is removed from the NNTracker class so that it is
-#       easy to replace with another A.N.N. / N.N algorithm.
 cdef class _WarpIndex_Flann:
     cdef:
         double[:,:,:] warps
@@ -143,4 +133,9 @@ cdef class NNTracker:
 
     cpdef get_region(self):
         return apply_to_pts(self.get_warp(), np.array([[-.5,-.5],[.5,-.5],[.5,.5],[-.5,.5]]).T)
-        
+
+cdef double[:,:] _square = np.array([[-.5,-.5],[.5,-.5],[.5,.5],[-.5,.5]]).T
+cdef double[:,:] _random_homography(double sigma_t, double sigma_d):
+    cdef double[:,:] disturbed = np.random.normal(0,sigma_d, (2,4)) + np.random.normal(0, sigma_t, (2,1)) + _square
+    cdef double[:,:] H = compute_homography(_square, disturbed)
+    return H

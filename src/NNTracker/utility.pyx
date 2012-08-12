@@ -9,10 +9,7 @@ the various tracking algorithms.
 Author: Travis Dick (travis.barry.dick@gmail.com)
 """
 
-from cython.view cimport array
-
 import cv2
-cimport numpy as np
 import numpy as np
 from scipy.linalg import expm
 
@@ -75,7 +72,7 @@ cpdef double[:] sample_pts(double[:,:] img, int resx, int resy, double[:,:] warp
             ri += 1
     return result
 
-cpdef double [:,:] to_grayscale(np.uint8_t [:,:,:] img):
+cpdef double [:,:] to_grayscale(unsigned char [:,:,:] img):
     cdef int h = img.shape[0]
     cdef int w = img.shape[1]
     cdef int d = img.shape[2]

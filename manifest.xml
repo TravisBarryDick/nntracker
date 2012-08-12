@@ -1,5 +1,5 @@
 <package>
-  <description brief="NNTracker">
+  <description brief="nnTracker">
 	Implementation of the nearest neighbour tracking algorithm.
   </description>
   

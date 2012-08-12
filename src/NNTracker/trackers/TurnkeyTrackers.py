@@ -11,7 +11,6 @@ from NNTracker import NNTracker
 
 from ThreadedCascadeTracker import ThreadedCascadeTracker
 from CascadeTracker import CascadeTracker
-from Homography import random_homography
 
 def make_pure_nn(use_scv=False, res=(40,40), threaded=True):
     t1 = NNTracker(1, 8000, res[0], res[1], 0.07, 0.06, use_scv)
