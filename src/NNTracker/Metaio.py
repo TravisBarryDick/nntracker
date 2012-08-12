@@ -4,8 +4,7 @@ import re
 import cv2
 import numpy as np
 
-from Homography import *
-from ImageUtils import *
+from utility import *
 from Polygons import *
 
 # ---------- Transformation Between XGA boundary and Template boundary ---------- #
@@ -22,7 +21,7 @@ class RegionScaling:
         w = self.warp(square_to_corners_warp(r))
         return apply_to_pts(w, self._square)
 
-_scale_factor = 2.4
+_scale_factor = 2.0
 toTemplate = RegionScaling(1/_scale_factor)
 toXGA = RegionScaling(_scale_factor)
 
@@ -71,7 +70,10 @@ def run_benchmark(video, inits, tracker):
         if not succ: break
         gray_img = to_grayscale(img)
         if frame in inits.keys():
-            tracker.initialize(gray_img, toTemplate.region(inits[frame][1]))
+            if tracker.is_initialized():
+                tracker.set_region(toTemplate.region(inits[frame][1]))
+            else:
+                tracker.initialize(gray_img, toTemplate.region(inits[frame][1]))
         else:
             tracker.update(gray_img)
         if tracker.is_initialized():

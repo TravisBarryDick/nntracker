@@ -3,8 +3,10 @@ A small standalone application for tracker demonstration. Depends
 on OpenCV VideoCapture to grab frames from the camera.
 
 Author: Travis Dick (travis.barry.dick@gmail.com)
+
 """
-from Homography import *
+
+from utility import *
 from InteractiveTracking import *
 from TurnkeyTrackers import make_esm, make_nn_GN, make_nn_esm
 
