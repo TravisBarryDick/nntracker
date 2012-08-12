@@ -19,7 +19,8 @@ from nntracker.utility import *
 class RosInteractiveTrackingApp(InteractiveTrackingApp):
     
     def __init__(self, tracker):
-        InteractiveTrackingApp.__init__(self, tracker, "ROS Interactive NN Tracker")
+        InteractiveTrackingApp.__init__(self, tracker, "ROS Interactive NN Tracker",
+                                        init_with_rectangle=False)
         rospy.init_node("NNTracker")
         
         image_topic = rospy.get_param("~image", "/camera/image_raw")
