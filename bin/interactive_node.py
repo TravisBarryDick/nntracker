@@ -5,6 +5,7 @@ roslib.load_manifest('nntracker')
 
 import sys
 import threading
+import Queue.LifoQueue
 
 from cv_bridge import CvBridge, CvBridgeError
 import numpy as np
@@ -25,10 +26,9 @@ class TrackingThread(threading.Thread):
 
     def run(self):
         while True:
-            with self.tracking_app.next_frame_lock:
-                if self.tracking_app.next_frame != None:
-                    self.tracking_app.on_frame(self.tracking_app.next_frame)
-                self.tracking_app.next_frame = None
+            while not self.tracking_app.frames.empty():
+                frame = self.tracking_app.frames.get()
+                self.tracking_app.on_frame(frame)
             if self.tracking_app.tracker.is_initialized() and not self.tracking_app.paused:
                 message = NNTrackerROI()
                 region = self.tracking_app.tracker.get_region()
@@ -54,8 +54,10 @@ class RosInteractiveTrackingApp(InteractiveTrackingApp):
         self.roi_pub = rospy.Publisher(roi_topic, NNTrackerROI)
         self.bridge = CvBridge()
         
-        self.next_frame = None
-        self.next_frame_lock = threading.Lock()
+        self.frames = LifoQueue(5)
+
+        # self.next_frame = None
+        # self.next_frame_lock = threading.Lock()
 
     def run(self):
         thread = TrackingThread(self)
@@ -63,8 +65,9 @@ class RosInteractiveTrackingApp(InteractiveTrackingApp):
         rospy.spin()
 
     def callback(self, data):
-        with self.next_frame_lock:
-            self.next_frame = np.array(self.bridge.imgmsg_to_cv(data, "bgr8"))
+        self.frames.put(np.array(self.bridge.imgmsg_to_cv(data, "bgr8")), False)
+        # with self.next_frame_lock:
+        #     self.next_frame = np.array(self.bridge.imgmsg_to_cv(data, "bgr8"))
 
 if __name__ == '__main__':
     tracker = make_nn_GN(use_scv = True)

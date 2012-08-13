@@ -48,7 +48,7 @@ if __name__ == '__main__':
         vc = cv2.VideoCapture(0)
         start_paused = False
     
-    tracker = make_nn_GN_old(use_scv = True)
+    tracker = make_nn_GN(use_scv = True)
 
     app = StandaloneTrackingApp(vc, tracker, start_paused = start_paused)
     app.run()
