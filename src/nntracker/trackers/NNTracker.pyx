@@ -51,7 +51,7 @@ cdef class _WarpIndex_Flann:
         # --- Building Flann Index --- #
         print "Building Flann Index..."
         self.flann = pyflann.FLANN()
-        self.flann.build_index(np.asarray(self.images).T, algorithm='kdtree', trees=10)
+        self.flann.build_index(np.asarray(self.images).T, algorithm='kdtree', trees=3)
         print "Done!"         
 
     cpdef best_match(self, img):

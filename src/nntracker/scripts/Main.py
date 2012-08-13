@@ -6,9 +6,17 @@ Author: Travis Dick (travis.barry.dick@gmail.com)
 
 """
 
+import os
+import sys
+
 from nntracker.utility import *
 from nntracker.InteractiveTracking import *
-from nntracker.trackers.TurnkeyTrackers import make_esm, make_nn_GN, make_nn_esm
+from nntracker.trackers.TurnkeyTrackers import make_esm, make_nn_GN, make_nn_esm, make_nn, make_nn_GN_old
+
+from nntracker.trackers.BMICTracker import BMICTracker
+from nntracker.trackers.CascadeTracker import CascadeTracker
+from nntracker.trackers.NNTracker import NNTracker
+
 
 class StandaloneTrackingApp(InteractiveTrackingApp):
     """ A demo program that uses OpenCV to grab frames. """
@@ -33,6 +41,15 @@ class StandaloneTrackingApp(InteractiveTrackingApp):
 
 
 if __name__ == '__main__':
-    app = StandaloneTrackingApp(cv2.VideoCapture(0), make_esm(use_scv=True))
+    if len(sys.argv) > 1: 
+        vc = cv2.VideoCapture(os.path.expanduser(sys.argv[1]))
+        start_paused = True
+    else: 
+        vc = cv2.VideoCapture(0)
+        start_paused = False
+    
+    tracker = make_nn_GN_old(use_scv = True)
+
+    app = StandaloneTrackingApp(vc, tracker, start_paused = start_paused)
     app.run()
     app.cleanup()

@@ -9,7 +9,7 @@ import cv2
 import numpy as np
 
 #from Homography import *
-from utility import *
+from nntracker.utility import *
 
 class StaticImageMotion:
 

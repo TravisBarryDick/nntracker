@@ -4,8 +4,7 @@ import re
 import cv2
 import numpy as np
 
-from utility import *
-from Polygons import *
+from nntracker.utility import *
 
 # ---------- Transformation Between XGA boundary and Template boundary ---------- #
 

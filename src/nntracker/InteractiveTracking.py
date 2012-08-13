@@ -80,6 +80,7 @@ class InteractiveTrackingApp:
                     else:
                         self.tracker.set_region(corners)
                     self.corner_pts = []
+                    self.paused = False
 
 
         elif evt == cv2.EVENT_MOUSEMOVE and self.m_start != None:
