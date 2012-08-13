@@ -5,7 +5,7 @@ roslib.load_manifest('nntracker')
 
 import sys
 import threading
-import Queue.LifoQueue as LifoQueue
+from Queue import LifoQueue
 
 from cv_bridge import CvBridge, CvBridgeError
 import numpy as np
