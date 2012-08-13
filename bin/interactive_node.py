@@ -65,7 +65,10 @@ class RosInteractiveTrackingApp(InteractiveTrackingApp):
         rospy.spin()
 
     def callback(self, data):
-        self.frames.put(np.array(self.bridge.imgmsg_to_cv(data, "bgr8")), False)
+        try:
+            self.frames.put(np.array(self.bridge.imgmsg_to_cv(data, "bgr8")), False)
+        except:
+            pass
         # with self.next_frame_lock:
         #     self.next_frame = np.array(self.bridge.imgmsg_to_cv(data, "bgr8"))
 
