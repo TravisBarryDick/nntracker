@@ -19,23 +19,26 @@ from nntracker.utility import *
 
 class TrackingThread(threading.Thread):
     def __init__(self, tracking_app):
+        threading.Thread.__init__(self)
         self.tracking_app = tracking_app
+        self.daemon = True
 
     def run(self):
-        with self.tracking_app.next_frame_lock:
-            if self.tracking_app.next_frame != None:
-                tracking_app.onframe(tracking_app.next_frame)
-            tracking_app.next_frame = None
-        if self.tracking_app.tracker.is_initialized() and not self.tracking_app.paused:
-            message = NNTrackerROI()
-            region = self.tracking_app
-            message.ulx, message.uly = region[:,0]
-            message.urx, message.ury = region[:,1]
-            message.lrx, message.lry = region[:,2]
-            message.llx, message.lly = region[:,3]
-            message.perimeter, message.area, (message.cmx, message.cmy) = polygon_descriptors(region)
-            self.roi_pub.publish(message)
-        cv.waitKey(1)
+        while True:
+            with self.tracking_app.next_frame_lock:
+                if self.tracking_app.next_frame != None:
+                    self.tracking_app.on_frame(self.tracking_app.next_frame)
+                self.tracking_app.next_frame = None
+            if self.tracking_app.tracker.is_initialized() and not self.tracking_app.paused:
+                message = NNTrackerROI()
+                region = self.tracking_app.tracker.get_region()
+                message.ulx, message.uly = region[:,0]
+                message.urx, message.ury = region[:,1]
+                message.lrx, message.lry = region[:,2]
+                message.llx, message.lly = region[:,3]
+                message.perimeter, message.area, (message.cmx, message.cmy) = polygon_descriptors(region)
+                self.tracking_app.roi_pub.publish(message)
+            cv2.waitKey(1)
 
 class RosInteractiveTrackingApp(InteractiveTrackingApp):
     
@@ -60,12 +63,11 @@ class RosInteractiveTrackingApp(InteractiveTrackingApp):
         rospy.spin()
 
     def callback(self, data):
-        img = np.array(self.bridge.imgmsg_to_cv(data, "bgr8"))
         with self.next_frame_lock:
-            self.next_frame = img
+            self.next_frame = np.array(self.bridge.imgmsg_to_cv(data, "bgr8"))
 
 if __name__ == '__main__':
-    tracker = make_nn_GN()
+    tracker = make_nn_GN(use_scv = True)
     app = RosInteractiveTrackingApp(tracker)
     app.run()
     app.cleanup()
