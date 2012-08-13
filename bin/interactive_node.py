@@ -4,6 +4,7 @@ import roslib
 roslib.load_manifest('nntracker')
 
 import sys
+import threading
 
 from cv_bridge import CvBridge, CvBridgeError
 import numpy as np
@@ -15,6 +16,26 @@ from nntracker.trackers.TurnkeyTrackers import *
 from nntracker.msg import NNTrackerROI
 from nntracker.InteractiveTracking import *
 from nntracker.utility import *
+
+class TrackingThread(threading.Thread):
+    def __init__(self, tracking_app):
+        self.tracking_app = tracking_app
+
+    def run(self):
+        with self.tracking_app.next_frame_lock:
+            if self.tracking_app.next_frame != None:
+                tracking_app.onframe(tracking_app.next_frame)
+            tracking_app.next_frame = None
+        if self.tracking_app.tracker.is_initialized() and not self.tracking_app.paused:
+            message = NNTrackerROI()
+            region = self.tracking_app
+            message.ulx, message.uly = region[:,0]
+            message.urx, message.ury = region[:,1]
+            message.lrx, message.lry = region[:,2]
+            message.llx, message.lly = region[:,3]
+            message.perimeter, message.area, (message.cmx, message.cmy) = polygon_descriptors(region)
+            self.roi_pub.publish(message)
+        cv.waitKey(1)
 
 class RosInteractiveTrackingApp(InteractiveTrackingApp):
     
@@ -29,24 +50,19 @@ class RosInteractiveTrackingApp(InteractiveTrackingApp):
         self.image_sub = rospy.Subscriber(image_topic, Image, self.callback, queue_size=1)
         self.roi_pub = rospy.Publisher(roi_topic, NNTrackerROI)
         self.bridge = CvBridge()
+        
+        self.next_frame = None
+        self.next_frame_lock = threading.Lock()
 
     def run(self):
+        thread = TrackingThread(self)
+        thread.start()
         rospy.spin()
 
     def callback(self, data):
         img = np.array(self.bridge.imgmsg_to_cv(data, "bgr8"))
-        self.on_frame(img)
-        if self.tracker.is_initialized() and not self.paused:
-            message = NNTrackerROI()
-            region = self.tracker.get_region()
-            message.ulx, message.uly = region[:,0]
-            message.urx, message.ury = region[:,1]
-            message.lrx, message.lry = region[:,2]
-            message.llx, message.lly = region[:,3]
-            message.perimeter, message.area, (message.cmx, message.cmy) = polygon_descriptors(region)
-            self.roi_pub.publish(message)
-        cv.WaitKey(7) 
-        #cv2.waitKey(1)
+        with self.next_frame_lock:
+            self.next_frame = img
 
 if __name__ == '__main__':
     tracker = make_nn_GN()
