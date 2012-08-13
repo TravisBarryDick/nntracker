@@ -54,7 +54,7 @@ class RosInteractiveTrackingApp(InteractiveTrackingApp):
         self.roi_pub = rospy.Publisher(roi_topic, NNTrackerROI)
         self.bridge = CvBridge()
         
-        self.frames = LifoQueue(5)
+        self.frames = LifoQueue(10)
 
         # self.next_frame = None
         # self.next_frame_lock = threading.Lock()
