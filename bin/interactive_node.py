@@ -46,18 +46,12 @@ class RosInteractiveTrackingApp(InteractiveTrackingApp):
         InteractiveTrackingApp.__init__(self, tracker, "ROS Interactive NN Tracker",
                                         init_with_rectangle=False)
         rospy.init_node("NNTracker")
-        
         image_topic = rospy.get_param("~image", "/camera/image_raw")
         roi_topic = rospy.get_param("~roi_topic", "roi_NNTracker")
-
         self.image_sub = rospy.Subscriber(image_topic, Image, self.callback, queue_size=1)
         self.roi_pub = rospy.Publisher(roi_topic, NNTrackerROI)
         self.bridge = CvBridge()
-        
-        self.frames = LifoQueue(3)
-
-        # self.next_frame = None
-        # self.next_frame_lock = threading.Lock()
+        self.frames = LifoQueue(1)
 
     def run(self):
         thread = TrackingThread(self)
@@ -69,8 +63,6 @@ class RosInteractiveTrackingApp(InteractiveTrackingApp):
             self.frames.put(np.array(self.bridge.imgmsg_to_cv(data, "bgr8")), False)
         except:
             pass
-        # with self.next_frame_lock:
-        #     self.next_frame = np.array(self.bridge.imgmsg_to_cv(data, "bgr8"))
 
 if __name__ == '__main__':
     tracker = make_nn_GN(use_scv = True)
