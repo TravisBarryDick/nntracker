@@ -1,13 +1,7 @@
-import timeit
-
 import cv2
 import numpy as np
 
-from utility import *
-from BMICTracker import BMICTracker
-from ESMTracker import ESMTracker
-from NNTracker import NNTracker
-from TrackerBase import rectangle_to_region
+from nntracker.utility import *
 
 def make_one_run(tracker, img, region, sigma = 8):
     tracker.initialize(img, region)
@@ -44,10 +38,4 @@ img = cv2.resize(np.asarray(to_grayscale(cv2.imread("/Users/travisdick/Desktop/L
 ul = (256/2-50, 256/2-50)
 lr = (256/2+50, 256/2+50)
 region = rectangle_to_region(ul, lr)
-tracker = ESMTracker(15, -1, 50, 50, False)
-tracker.initialize(img, region)
-
-if __name__ == "__main__":
-    for i in xrange(50):
-        tracker.update(img)
     

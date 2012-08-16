@@ -211,7 +211,10 @@ cpdef double[:,:] compute_homography(double[:,:] in_pts, double[:,:] out_pts):
     U,S,V = np.linalg.svd(constraint_matrix)
     cdef double[:,:] H = V[8].reshape(3,3) / V[8][-1]
     return H
-        
+
+def rectangle_to_region(ul, lr):
+    return np.array([ul, [lr[0], ul[1]], lr, [ul[0], lr[1]]],
+                    dtype = np.float64).T
 
 # ---------- Legacy Codes From Previous Implementation ---------- #
 # TODO: Replace these with optimized versions. The only operations

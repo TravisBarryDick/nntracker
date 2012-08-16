@@ -4,6 +4,7 @@ Author: Travis Dick (travis.barry.dick@gmail.com)
 """
 
 import numpy as np
+from nntracker.utility import rectangle_to_region
 
 class TrackerBase:
     """ The base class for all tracking algorithms.
@@ -127,6 +128,3 @@ class TrackerBase:
     def is_initialized(self): 
         """ Returns whether the tracker is initialized yet or not. """
         raise NotImplementedError()
-
-def rectangle_to_region(ul, lr):
-    return np.array([ul, [lr[0],ul[1]], lr, [ul[0],lr[1]]], dtype=np.float64).T

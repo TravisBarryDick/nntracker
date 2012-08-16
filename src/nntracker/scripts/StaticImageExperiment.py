@@ -8,10 +8,9 @@ import math
 import cv2
 import numpy as np
 
-#from Homography import *
 from nntracker.utility import *
 
-class StaticImageMotion:
+class StaticImageExperiment:
 
     def __init__(self, image, target_region, sigmas, n_trials, max_spatial_sigma, single_template=False):
 
@@ -57,3 +56,12 @@ class StaticImageMotion:
 
 def _point_rmse(a,b):
     return  math.sqrt(np.sum((a-b)**2)/a.shape[1])
+
+# Set up an experiment with the lena image. This is tedious to retype every time.
+# TODO: Remove this before publishing code.
+img = cv2.resize(np.asarray(to_grayscale(cv2.imread("/Users/travisdick/Desktop/Lenna.png"))), (256, 256))
+ul = (256/2-50, 256/2-50)
+lr = (256/2+50, 256/2+50)
+region = rectangle_to_region(ul, lr)
+sigmas = np.arange(1,20.1,1)
+experiment = StaticImageExperiment(img, region, sigmas, 5000, 1, True)
