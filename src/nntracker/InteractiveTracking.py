@@ -9,7 +9,8 @@ import numpy as np
 from utility import *
 
 class InteractiveTrackingApp:
-    def __init__(self, tracker, name="vis", init_with_rectangle=True):
+    def __init__(self, trackers, name="vis", init_with_rectangle=True, colours=[(255,0,0), (0,255,0), (0,0,255), (255,255,255), (0,0,0)],
+                 thickness=[2,1,1,1,1]):
         """ An interactive window for initializing and visualizing tracker state.
 
         The on_frame method should be called for each new frame. Typically real
@@ -32,9 +33,11 @@ class InteractiveTrackingApp:
         """
 
         self.tracking = False
-        self.tracker = tracker
+        self.trackers = trackers
         self.name = name
         self.init_with_rectangle = init_with_rectangle
+        self.colours = colours
+        self.thickness = thickness
 
         self.m_start = None
         self.m_end = None
@@ -43,18 +46,23 @@ class InteractiveTrackingApp:
         self.gray_img = None
         self.paused = False
         self.img = None
-        cv2.namedWindow(self.name)
+        cv2.namedWindow(self.name,0)
         cv2.setMouseCallback(self.name, self.mouse_handler)
 
     def display(self, img):
         annotated_img = img.copy()
-        if self.tracker.is_initialized() and self.tracking:
-            draw_region(annotated_img, self.tracker.get_region(), (0,255,0), 2)
+
+        if self.tracking:
+            for i,tracker in enumerate(self.trackers):
+                if tracker.is_initialized():
+                    draw_region(annotated_img, tracker.get_region(), self.colours[i], self.thickness[i])
+        
         if self.init_with_rectangle and self.m_start != None and self.m_end != None:
             ul = (min(self.m_start[0],self.m_end[0]), min(self.m_start[1],self.m_end[1]))
             lr = (max(self.m_start[0],self.m_end[0]), max(self.m_start[1],self.m_end[1]))             
             corners = np.array([ ul, [lr[0],ul[1]], lr, [ul[0],lr[1]]]).T            
             draw_region(annotated_img, corners, (255,0,0), 1)
+
         if not self.init_with_rectangle:
             for pt in self.corner_pts:
                 cv2.circle(annotated_img, pt, 2, (255,0,0), 1)
@@ -75,10 +83,12 @@ class InteractiveTrackingApp:
                     cv2.waitKey(1)
                     corners = np.array(self.corner_pts, dtype=np.float64).T
                     if not self.tracking:
-                        self.tracker.initialize(self.gray_img, corners)
+                        for tracker in self.trackers:
+                            tracker.initialize(self.gray_img, corners)
                         self.tracking = True
                     else:
-                        self.tracker.set_region(corners)
+                        for tracker in self.trackers:
+                            tracker.set_region(corners)
                     self.corner_pts = []
                     self.paused = False
 
@@ -92,9 +102,11 @@ class InteractiveTrackingApp:
                 ul = (min(self.m_start[0],self.m_end[0]), min(self.m_start[1],self.m_end[1]))
                 lr = (max(self.m_start[0],self.m_end[0]), max(self.m_start[1],self.m_end[1]))
                 if not self.tracking:
-                    self.tracker.initialize_with_rectangle(self.gray_img, ul, lr)
+                    for tracker in self.trackers:
+                        tracker.initialize_with_rectangle(self.gray_img, ul, lr)
                 else: 
-                    self.tracker.set_region(np.array([ ul, [lr[0],ul[1]], lr, [ul[0],lr[1]]]).T)
+                    for tracker in self.trackers:
+                        tracker.set_region(np.array([ ul, [lr[0],ul[1]], lr, [ul[0],lr[1]]]).T)
                 self.m_start, self.m_end = None, None
                 self.tracking = True
                 self.paused = False
@@ -105,8 +117,8 @@ class InteractiveTrackingApp:
         if not self.paused:
             self.img = img
             self.gray_img = cv2.GaussianBlur(np.asarray(to_grayscale(img)), (5,5), 3)
-            #self.gray_img = to_grayscale(img)
-            self.tracker.update(self.gray_img)
+            for tracker in self.trackers:
+                tracker.update(self.gray_img)
         if self.img != None: self.display(self.img)
         key = cv.WaitKey(7)
         if key == ord(' '): self.paused = not self.paused
