@@ -33,7 +33,7 @@ roi_pub = rospy.Publisher("roi", NNTrackerROI)
 
 current_rgb_img = None
 current_gray_img = None
-def image_callback(self, data):
+def image_callback(data):
     global current_rgb_img, current_gray_img
     # Read image from message
     current_img = np.array(cvbridge.imgmsg_to_cv(data, "bgr8"))
