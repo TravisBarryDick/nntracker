@@ -30,11 +30,9 @@ cvbridge = CvBridge()
 roi_pub = rospy.Publisher("roi", NNTrackerROI)
 
 # ---------- Make a subscriber to grab images ---------- #
-image_sub = rospy.Subscriber("image", Image, image_callback, queue_size = 1)
 
 current_rgb_img = None
 current_gray_img = None
-
 def image_callback(self, data):
     global current_rgb_img, current_gray_img
     # Read image from message
@@ -53,10 +51,10 @@ def image_callback(self, data):
         message.lrx, message.lry = region[:,2]
         message.llx, message.lly = region[:,3]
         roi_pub.publish(message)
-        
+image_sub = rospy.Subscriber("image", Image, image_callback, queue_size = 1)
+
 # ---------- Make a subscriber to listen for commands ---------- #
 
-command_sub = rospy.Subscriber("command", NNTrackerCommand)
 def command_callback(self, message):
     if message.command == "initialize":
         r = message.region
@@ -65,7 +63,7 @@ def command_callback(self, message):
                            (r.lrx, r.lry),
                            (r.llx, r.lly)]).T
         algorithm.initialize(current_gray_img, region)
-
+command_sub = rospy.Subscriber("command", NNTrackerCommand)
 
     
     
