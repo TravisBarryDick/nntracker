@@ -7,7 +7,7 @@ float32 urx
 float32 ury
 
 float32 lrx
-float32 lry
+float32 lry	
 
 float32 llx
 float32 lly
