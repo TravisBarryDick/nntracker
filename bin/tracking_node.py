@@ -55,7 +55,7 @@ image_sub = rospy.Subscriber("image", Image, image_callback, queue_size = 1)
 
 # ---------- Make a subscriber to listen for commands ---------- #
 
-def command_callback(self, message):
+def command_callback(message):
     if message.command == "initialize":
         r = message.region
         region = np.array([(r.ulx, r.uly),
