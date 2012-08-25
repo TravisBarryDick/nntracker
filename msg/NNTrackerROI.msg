@@ -12,11 +12,3 @@ float32 lry
 float32 llx
 float32 lly
 
-float32 area
-
-float32 perimeter
-
-float32 cmx
-float32 cmy
-
-
