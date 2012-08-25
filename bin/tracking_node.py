@@ -66,4 +66,6 @@ def command_callback(self, message):
 command_sub = rospy.Subscriber("command", NNTrackerCommand)
 
     
-    
+# ---------- Wait until ROS quits ----------
+
+rospy.spin()
