@@ -1,4 +1,4 @@
-#!/user/bin/env python
+#!/usr/bin/env python
 
 import roslib
 roslib.load_manifest('nntracker')
@@ -18,7 +18,7 @@ rospy.init_node("nntracker")
 algorithm_name = rospy.get_param("~algorithm", "nn_bmic")
 if algorithm_name == "nn_bmic":
     algorithm = make_nn_GN(use_scv=True)
-else if algorithm_name == "esm":
+elif algorithm_name == "esm":
     algorithm = make_esm(use_scv=True)
 
 # ---------- Set up the OpenCV Bridge ---------- #
