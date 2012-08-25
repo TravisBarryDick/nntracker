@@ -8,6 +8,8 @@ import threading
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
 
+import rospy
+
 from nntracker.trackers.TurnkeyTrackers import *
 from nntracker.msg import NNTrackerROI, NNTrackerCommand
 from nntracker.utility import *
