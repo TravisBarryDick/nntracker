@@ -30,7 +30,7 @@ class TrackingThread(threading.Thread):
                 frame = self.tracking_app.frames.get()
                 self.tracking_app.on_frame(frame)
             if self.tracking_app.trackers[0].is_initialized() and not self.tracking_app.paused:
-                message = NNTrackerROI()st
+                message = NNTrackerROI()
                 region = self.tracking_app.trackers[0].get_region()
                 message.ulx, message.uly = region[:,0]
                 message.urx, message.ury = region[:,1]
