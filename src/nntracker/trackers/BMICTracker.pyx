@@ -71,6 +71,12 @@ cdef class BMICTracker:
             sampled_img = sample_pts(img, self.resx, self.resy, self.current_warp)
             self.intensity_map = scv_intensity_map(sampled_img, self.template)
 
+    cpdef set_intensity_map(self, double[:] intensity_map):
+        self.intensity_map = intensity_map
+
+    cpdef double[:] get_intensity_map(self):
+        return self.intensity_map
+
     cpdef is_initialized(self):
         return self.initialized
 

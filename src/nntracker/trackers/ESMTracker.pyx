@@ -72,30 +72,11 @@ cdef class ESMTracker:
             sampled_img = sample_pts(img, self.resx, self.resy, self.current_warp)
             self.intensity_map = scv_intensity_map(sampled_img, self.template)
 
-    # This function is used to determine a reasonable distribution on homography
-    # parameters
-    cpdef update_and_return(self, double[:,:] img):
-        if not self.initialized: return None
-        cdef int i
-        cdef double[:,:] Jpc
-        cdef double[:] sampled_img
-        cdef double[:,:] total_update = np.eye(3, dtype=np.float64)
-        for i in range(self.max_iters):
-            sampled_img = sample_pts(img, self.resx, self.resy, self.current_warp)
-            if self.use_scv:
-                sampled_img = scv_expected_img(sampled_img, self.intensity_map)
-            error = np.asarray(self.template - sampled_img).reshape(-1,1)
-            Jpc = sample_pts_grad_sl3(img, self.resx, self.resy, self.current_warp)
-            J = np.asmatrix(Jpc + self.Je) / 2.0
-            update = np.asarray(np.linalg.lstsq(J, error)[0]).squeeze()
-            self.current_warp = mat_mul(self.current_warp, make_hom_sl3(update))
-            total_update = mat_mul(total_update, make_hom_sl3(update))
-            normalize_hom(self.current_warp)
-            if np.sum(np.abs(update)) < self.threshold: break
-        if self.use_scv:
-            sampled_img = sample_pts(img, self.resx, self.resy, self.current_warp)
-            self.intensity_map = scv_intensity_map(sampled_img, self.template)
-        return total_update
+    cpdef set_intensity_map(self, double[:] intensity_map):
+        self.intensity_map = intensity_map
+
+    cpdef double[:] get_intensity_map(self):
+        return self.intensity_map
 
     cpdef is_initialized(self):
         return self.initialized

@@ -11,7 +11,7 @@ import sys
 
 from nntracker.utility import *
 from nntracker.InteractiveTracking import *
-from nntracker.trackers.TurnkeyTrackers import make_esm, make_nn_GN, make_nn_esm, make_nn, make_nn_GN_new
+from nntracker.trackers.TurnkeyTrackers import *
 
 from nntracker.trackers.BMICTracker import BMICTracker
 from nntracker.trackers.CascadeTracker import CascadeTracker
@@ -48,6 +48,6 @@ if __name__ == '__main__':
         vc = cv2.VideoCapture(0)
         start_paused = False
     
-    app = StandaloneTrackingApp(vc, [make_nn_esm(use_scv=True, res=(50,50)), make_esm(use_scv=True, res=(50,50))], start_paused = start_paused)
+    app = StandaloneTrackingApp(vc, [make_nn_GN(use_scv=True, res=(50,50)), make_esm(use_scv=True, res=(50,50))], start_paused = start_paused)
     app.run()
     app.cleanup()

@@ -6,7 +6,7 @@ from TrackerBase import *
 
 class CascadeTracker(TrackerBase):
 
-    def __init__(self, trackers, set_warp_directly=True):
+    def __init__(self, trackers, set_warp_directly=True, use_scv=False):
         """ Allows multiple trackers to be combined in series.
 
         Given a sequence of tracking algorithms, the CascadeTracker
@@ -42,6 +42,7 @@ class CascadeTracker(TrackerBase):
                 return tracker.get_region()
         self._set_state = set_tracker_state
         self._get_state = get_tracker_state
+        self.use_scv = use_scv
         self.initialized = False
     
     def initialize(self, img, region):
@@ -56,6 +57,10 @@ class CascadeTracker(TrackerBase):
             if state != None: self._set_state(t, state)
             t.update(img)
             state = self._get_state(t)
+        if self.use_scv:
+            best_intensity_map = self.trackers[-1].get_intensity_map()
+            for t in self.trackers:
+                t.set_intensity_map(best_intensity_map)
     
     def is_initialized(self):
         return self.initialized
