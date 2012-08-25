@@ -63,7 +63,7 @@ def command_callback(self, message):
                            (r.lrx, r.lry),
                            (r.llx, r.lly)]).T
         algorithm.initialize(current_gray_img, region)
-command_sub = rospy.Subscriber("command", NNTrackerCommand)
+command_sub = rospy.Subscriber("command", NNTrackerCommand, command_callback)
 
     
 # ---------- Wait until ROS quits ----------
