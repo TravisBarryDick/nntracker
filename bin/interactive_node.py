@@ -29,9 +29,9 @@ class TrackingThread(threading.Thread):
             while not self.tracking_app.frames.empty():
                 frame = self.tracking_app.frames.get()
                 self.tracking_app.on_frame(frame)
-            if self.tracking_app.tracker.is_initialized() and not self.tracking_app.paused:
+            if self.tracking_app.trackers[0].is_initialized() and not self.tracking_app.paused:
                 message = NNTrackerROI()
-                region = self.tracking_app.tracker.get_region()
+                region = self.tracking_app.trackers[0].get_region()
                 message.ulx, message.uly = region[:,0]
                 message.urx, message.ury = region[:,1]
                 message.lrx, message.lry = region[:,2]
@@ -42,8 +42,8 @@ class TrackingThread(threading.Thread):
 
 class RosInteractiveTrackingApp(InteractiveTrackingApp):
     
-    def __init__(self, tracker):
-        InteractiveTrackingApp.__init__(self, tracker, "ROS Interactive NN Tracker",
+    def __init__(self, trackers):
+        InteractiveTrackingApp.__init__(self, trackers, "ROS Interactive NN Tracker",
                                         init_with_rectangle=False)
         rospy.init_node("NNTracker")
         image_topic = rospy.get_param("~image", "/camera/image_raw")
@@ -65,8 +65,7 @@ class RosInteractiveTrackingApp(InteractiveTrackingApp):
             pass
 
 if __name__ == '__main__':
-    tracker = make_nn_GN(use_scv = True)
-    app = RosInteractiveTrackingApp(tracker)
+    app = RosInteractiveTrackingApp([make_nn_GN(use_scv=True)])
     app.run()
     app.cleanup()
 
