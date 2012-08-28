@@ -19,9 +19,9 @@ rospy.init_node("nntracker")
 # ---------- Create the Tracker ---------- #
 algorithm_name = rospy.get_param("~algorithm", "nn_bmic")
 if algorithm_name == "nn_bmic":
-    algorithm = make_nn_GN(use_scv=True)
-elif algorithm_name == "esm":
-    algorithm = make_esm(use_scv=True)
+    tracker = make_nn_GN(use_scv=True)
+elif tracker_name == "esm":
+    tracker = make_esm(use_scv=True)
 
 # ---------- Set up the OpenCV Bridge ---------- #
 cvbridge = CvBridge()
@@ -40,12 +40,12 @@ def image_callback(data):
     # Compute the gray image
     current_gray_img = cv2.GaussianBlur(np.asarray(to_grayscale(current_img)), (5,5), 3)
     # If the tracker is running, ask it to update and publish roi
-    if algorithm.is_initialized(): 
+    if tracker.is_initialized(): 
         # update
-        algorithm.update(current_gray_img)
+        tracker.update(current_gray_img)
         # publish roi
         message = NNTrackerROI()
-        region = algorithm.get_region()
+        region = tracker.get_region()
         message.ulx, message.uly = region[:,0]
         message.urx, message.ury = region[:,1]
         message.lrx, message.lry = region[:,2]
@@ -62,7 +62,7 @@ def command_callback(message):
                            (r.urx, r.ury),
                            (r.lrx, r.lry),
                            (r.llx, r.lly)]).T
-        algorithm.initialize(current_gray_img, region)
+        tracker.initialize(current_gray_img, region)
 command_sub = rospy.Subscriber("command", NNTrackerCommand, command_callback)
 
     
