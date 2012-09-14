@@ -12,14 +12,15 @@ from NNTracker import NNTracker
 from ThreadedCascadeTracker import ThreadedCascadeTracker
 from CascadeTracker import CascadeTracker
 
-def make_nn_GN(use_scv=False, res=(40,40), threaded=False):
-    t1 = NNTracker(10, 1000, res[0], res[1], 0.06, 0.04, use_scv)
-    t2 = NNTracker(10, 1000, res[0], res[1], 0.03, 0.02, use_scv)
-    t3 = NNTracker(10, 1000, res[0], res[1], 0.015, 0.01, use_scv)
-    t4 = BMICTracker(5, 0.001, res[0], res[1], use_scv)
+def make_nn_bmic(use_scv=False, res=(40,40), nn_iters=10, nn_samples=1000, bmic_iters=5):
+    t1 = NNTracker(nn_iters, nn_samples, res[0], res[1], 0.06, 0.04, use_scv)
+    t2 = NNTracker(nn_iters, nn_samples, res[0], res[1], 0.03, 0.02, use_scv)
+    t3 = NNTracker(nn_iters, nn_samples, res[0], res[1], 0.015, 0.01, use_scv)
+    t4 = BMICTracker(bmic_iters, 0.001, res[0], res[1], use_scv)
+    return CascadeTracker([t1, t2, t3, t4], use_scv=use_scv)
 
-    if threaded: return ThreadedCascadeTracker([t1, t2, t3, t4])
-    else: return CascadeTracker([t1, t2, t3, t4], use_scv=use_scv)
+def make_bmic(use_scv=False, res=(40,40), iters=30):
+    return BMICTracker(iters, 0.001, res[0], res[1], use_scv)
 
-def make_esm(use_scv=False, res=(40,40)):
-    return ESMTracker(20, 0.01, res[0], res[1], use_scv)
+def make_esm(use_scv=False, res=(40,40), iters=20):
+    return ESMTracker(iters, 0.001, res[0], res[1], use_scv)

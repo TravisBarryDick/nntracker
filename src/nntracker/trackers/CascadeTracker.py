@@ -32,12 +32,12 @@ class CascadeTracker(TrackerBase):
         
         if set_warp_directly:
             def set_tracker_state(tracker, state):
-                tracker.set_warp(state)
+                tracker.set_warp(state, reset_intensity = False)
             def get_tracker_state(tracker):
                 return tracker.get_warp()
         else:
             def set_tracker_state(tracker, state):
-                tracker.set_region(state)
+                tracker.set_region(state, reset_intensity = False)
             def get_tracker_state(tracker):
                 return tracker.get_region()
         self._set_state = set_tracker_state
@@ -66,13 +66,13 @@ class CascadeTracker(TrackerBase):
         return self.initialized
 
     def set_warp(self, warp):
-        for t in self.trackers: t.set_warp(warp)
+        for t in self.trackers: t.set_warp(warp, reset_intensity = True)
 
     def get_warp(self):
         return self.trackers[-1].get_warp()
 
     def set_region(self, region):
-        for t in self.trackers: t.set_region(region)
+        for t in self.trackers: t.set_region(region, reset_intensity = True)
     
     def get_region(self):
         return self.trackers[-1].get_region()

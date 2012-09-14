@@ -23,15 +23,20 @@ cdef class _WarpIndex_Flann:
         double[:,:,:] warps
         double[:,:] images
         object flann
+        bint verbose
 
     def __init__(self, double[:,:] img, double[:,:] warp, 
                  int n_samples, int resx, int resy, 
-                 double sigma_t, double sigma_d):
+                 double sigma_t, double sigma_d,
+                 bint verbose = False):
+        self.verbose = verbose
+
+        pyflann.set_distance_type("manhattan")
 
         # --- Sampling Warps --- #
-        print "Sampling Warps..."
+        self._msg("Sampling Warps...")
         warp_key = "%d %.5g %.5g" % (n_samples, sigma_t, sigma_d)
-        print "Warp Key =", warp_key
+        self._msg("Warp Key = %s" % warp_key)
         if not _stored_warps.has_key(warp_key):
             with _stored_warps_lock:
                 warps = np.empty((n_samples,3,3), dtype=np.float64)
@@ -41,7 +46,7 @@ cdef class _WarpIndex_Flann:
         self.warps = _stored_warps[warp_key]
 
          # --- Sampling Images --- #
-        print "Sampling Images..."
+        self._msg("Sampling Images...")
         cdef int n_pts = resx * resy
         self.images = np.empty((n_pts, n_samples), dtype=np.float64)
         for i in range(n_samples):
@@ -49,14 +54,21 @@ cdef class _WarpIndex_Flann:
             self.images[:,i] = sample_pts(img, resx, resy, mat_mul(warp, inv_warp))
 
         # --- Building Flann Index --- #
-        print "Building Flann Index..."
+        self._msg("Building Flann Index...")
         self.flann = pyflann.FLANN()
-        self.flann.build_index(np.asarray(self.images).T, algorithm='kdtree', trees=3)
-        print "Done!"         
+        #self.flann.build_index(np.asarray(self.images).T, algorithm='linear')
+        self.flann.build_index(np.asarray(self.images).T, algorithm='kdtree', trees=6, checks=50)
+        self._msg("Done!")
+
+    cpdef _msg(self, str):
+        if self.verbose: print str
 
     cpdef best_match(self, img):
         results, dists = self.flann.nn_index(np.asarray(img))
         return self.warps[<int>results[0],:,:]
+
+    cpdef mean_pixel_variance(self):
+        return np.mean(np.var(self.images, 1))
 
 cdef class NNTracker:
 
@@ -70,10 +82,11 @@ cdef class NNTracker:
         double[:,:] current_warp
         double[:] intensity_map
         bint use_scv
+        bint verbose
         bint initialized
 
     def __init__(self, int max_iters, int n_samples, int resx, int resy, double sigma_t, 
-                 double sigma_d, bint use_scv):
+                 double sigma_d, bint use_scv, bint verbose=False):
         self.max_iters = max_iters
         self.n_samples = n_samples
         self.resx = resx
@@ -81,6 +94,7 @@ cdef class NNTracker:
         self.sigma_t = sigma_t
         self.sigma_d = sigma_d
         self.use_scv = use_scv
+        self.verbose = verbose
         self.initialized = False
 
     cpdef initialize(self, double[:,:] img, double[:,:] region_corners):
@@ -89,7 +103,7 @@ cdef class NNTracker:
         self.template = np.asarray(sample_pts(img, self.resx, self.resy, self.current_warp))
         self.warp_index = _WarpIndex_Flann(img, self.current_warp,
                                            self.n_samples, self.resx, self.resy,
-                                           self.sigma_t, self.sigma_d)
+                                           self.sigma_t, self.sigma_d, verbose=self.verbose)
         if self.use_scv:
             self.intensity_map = np.arange(256, dtype=np.float64)
         self.initialized = True
@@ -127,22 +141,27 @@ cdef class NNTracker:
     cpdef is_initialized(self):
         return self.initialized
 
-    cpdef set_warp(self, double[:,:] warp):
+    cpdef set_warp(self, double[:,:] warp, bint reset_intensity=True):
         self.current_warp = warp
-        self.intensity_map = None
+        if reset_intensity: self.intensity_map = None
 
     cpdef double[:,:] get_warp(self):
         return np.asmatrix(self.current_warp)
 
-    cpdef set_region(self, double[:,:] corners):
+    cpdef set_region(self, double[:,:] corners, bint reset_intensity=True):
         self.current_warp = square_to_corners_warp(corners)
-        self.intensity_map = None
+        if reset_intensity: self.intensity_map = None
 
     cpdef get_region(self):
         return apply_to_pts(self.get_warp(), np.array([[-.5,-.5],[.5,-.5],[.5,.5],[-.5,.5]]).T)
+
+    cpdef get_warp_index(self):
+        return self.warp_index
 
 cdef double[:,:] _square = np.array([[-.5,-.5],[.5,-.5],[.5,.5],[-.5,.5]]).T
 cdef double[:,:] _random_homography(double sigma_t, double sigma_d):
     cdef double[:,:] disturbed = np.random.normal(0,sigma_d, (2,4)) + np.random.normal(0, sigma_t, (2,1)) + _square
     cdef double[:,:] H = compute_homography(_square, disturbed)
     return H
+
+    

@@ -48,6 +48,6 @@ if __name__ == '__main__':
         vc = cv2.VideoCapture(0)
         start_paused = False
     
-    app = StandaloneTrackingApp(vc, [make_nn_GN(use_scv=True, res=(50,50)), make_esm(use_scv=True, res=(50,50))], start_paused = start_paused)
+    app = StandaloneTrackingApp(vc, [make_nn_GN(use_scv=True), make_esm(use_scv=True)], start_paused = start_paused)
     app.run()
     app.cleanup()

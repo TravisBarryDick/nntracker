@@ -81,16 +81,16 @@ cdef class ESMTracker:
     cpdef is_initialized(self):
         return self.initialized
 
-    cpdef set_warp(self, double[:,:] warp):
+    cpdef set_warp(self, double[:,:] warp, bint reset_intensity=True):
         self.current_warp = warp
-        self.intensity_map = None
+        if reset_intensity: self.intensity_map = None
 
     cpdef double[:,:] get_warp(self):
         return np.asmatrix(self.current_warp)
 
-    cpdef set_region(self, double[:,:] corners):
+    cpdef set_region(self, double[:,:] corners, bint reset_intensity=True):
         self.current_warp = square_to_corners_warp(corners)
-        self.intensity_map = None
+        if reset_intensity: self.intensity_map = None
 
     cpdef get_region(self):
         return apply_to_pts(self.get_warp(), np.array([[-.5,-.5],[.5,-.5],[.5,.5],[-.5,.5]]).T)

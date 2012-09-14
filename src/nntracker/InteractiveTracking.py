@@ -73,7 +73,7 @@ class InteractiveTrackingApp:
         if self.gray_img == None: return 
         if evt == cv2.EVENT_LBUTTONDOWN and self.m_start == None:
             if self.init_with_rectangle:
-                self.m_start = (x,y)
+                self.m_start = (float(x),float(y))
                 self.m_end = (x,y)
                 self.paused = True
             else:
@@ -98,7 +98,7 @@ class InteractiveTrackingApp:
                 self.m_end = (x,y)
         elif evt == cv2.EVENT_LBUTTONUP:
             if self.init_with_rectangle:
-                self.m_end = (x,y)
+                self.m_end = (float(x),float(y))
                 ul = (min(self.m_start[0],self.m_end[0]), min(self.m_start[1],self.m_end[1]))
                 lr = (max(self.m_start[0],self.m_end[0]), max(self.m_start[1],self.m_end[1]))
                 if not self.tracking:

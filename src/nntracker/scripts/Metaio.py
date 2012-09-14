@@ -67,7 +67,7 @@ def run_benchmark(video, inits, tracker):
     while True:
         succ, img = video.read()
         if not succ: break
-        gray_img = to_grayscale(img)
+        gray_img = cv2.GaussianBlur(np.asarray(to_grayscale(img)), (3,3), 0.75) 
         if frame in inits.keys():
             if tracker.is_initialized():
                 tracker.set_region(toTemplate.region(inits[frame][1]))
@@ -83,7 +83,26 @@ def run_benchmark(video, inits, tracker):
         cv2.imshow("Metaio Benchmark", img)
         cv2.waitKey(1)
     video.release()
+    return corners
 
 def load_and_run_benchmark(directory, seq_num, tracker):
     video, inits = open_benchmark(directory, seq_num)
     return run_benchmark(video, inits, tracker)
+    
+def replay_results(vc, results_list):
+    colour = [(255,0,0), (0,255,0), (0,0,255)]
+    thickness = [3,2,1]
+    
+    cv2.namedWindow("replay")
+    i = 0
+    while True:
+        succ, img = vc.read()
+        if not succ: break
+
+        annotated_img = img.copy()
+        for j,results in enumerate(results_list):
+            draw_region(annotated_img, results[i], colour[j], thickness[j])
+        cv2.imshow("replay", annotated_img)
+        cv2.waitKey(1)
+        
+        i += 1

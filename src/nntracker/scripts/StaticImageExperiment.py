@@ -60,6 +60,7 @@ def _point_rmse(a,b):
 # Set up an experiment with the lena image. This is tedious to retype every time.
 # TODO: Remove this before publishing code.
 img = cv2.resize(np.asarray(to_grayscale(cv2.imread("/Users/travisdick/Desktop/Lenna.png"))), (256, 256))
+img = cv2.GaussianBlur(img, (3,3), 0.75)
 ul = (256/2-50, 256/2-50)
 lr = (256/2+50, 256/2+50)
 region = rectangle_to_region(ul, lr)
