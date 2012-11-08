@@ -46,28 +46,29 @@ class InteractiveTrackingApp:
         self.gray_img = None
         self.paused = False
         self.img = None
+        self.annotated_img = None
         cv2.namedWindow(self.name,0)
         cv2.setMouseCallback(self.name, self.mouse_handler)
 
     def display(self, img):
-        annotated_img = img.copy()
+        self.annotated_img = img.copy()
 
         if self.tracking:
             for i,tracker in enumerate(self.trackers):
                 if tracker.is_initialized():
-                    draw_region(annotated_img, tracker.get_region(), self.colours[i], self.thickness[i])
+                    draw_region(self.annotated_img, tracker.get_region(), self.colours[i], self.thickness[i])
         
         if self.init_with_rectangle and self.m_start != None and self.m_end != None:
             ul = (min(self.m_start[0],self.m_end[0]), min(self.m_start[1],self.m_end[1]))
             lr = (max(self.m_start[0],self.m_end[0]), max(self.m_start[1],self.m_end[1]))             
             corners = np.array([ ul, [lr[0],ul[1]], lr, [ul[0],lr[1]]]).T            
-            draw_region(annotated_img, corners, (255,0,0), 1)
+            draw_region(self.annotated_img, corners, (255,0,0), 1)
 
         if not self.init_with_rectangle:
             for pt in self.corner_pts:
-                cv2.circle(annotated_img, pt, 2, (255,0,0), 1)
+                cv2.circle(self.annotated_img, pt, 2, (255,0,0), 1)
 
-        cv2.imshow(self.name, annotated_img)
+        cv2.imshow(self.name, self.annotated_img)
 
     def mouse_handler(self, evt,x,y,arg,extra):
         if self.gray_img == None: return 
@@ -111,16 +112,14 @@ class InteractiveTrackingApp:
                 self.tracking = True
                 self.paused = False
 
-    
-
     def on_frame(self, img):
         if not self.paused:
             self.img = img
             self.gray_img = cv2.GaussianBlur(np.asarray(to_grayscale(img)), (5,5), 3)
             for tracker in self.trackers:
                 tracker.update(self.gray_img)
+        key = cv.WaitKey(13)
         if self.img != None: self.display(self.img)
-        key = cv.WaitKey(7)
         if key == ord(' '): self.paused = not self.paused
         elif key == ord('c'): self.tracking = False
         elif key > 0: return False
