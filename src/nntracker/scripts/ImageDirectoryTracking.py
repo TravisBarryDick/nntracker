@@ -18,6 +18,7 @@ class ImageDirectoryTracking(InteractiveTrackingApp):
 
         # Transform the unix glob into a list of file names
         self.file_names = glob(path.expanduser(path.expandvars(in_glob)))
+        self.file_names.sort()
 
         # Make sure the output directory exists
         self.out_dir = path.expanduser(path.expandvars(out_dir))
