@@ -119,6 +119,9 @@ class InteractiveTrackingApp:
             for tracker in self.trackers:
                 tracker.update(self.gray_img)
         key = cv.WaitKey(13)
+        # Since GTK encodes more information in the higher bits of the key
+        # value, we need to get rid of those before we do the key comparison
+        if key != -1: key %= 256 
         if self.img != None: self.display(self.img)
         if key == ord(' '): self.paused = not self.paused
         elif key == ord('c'): self.tracking = False
