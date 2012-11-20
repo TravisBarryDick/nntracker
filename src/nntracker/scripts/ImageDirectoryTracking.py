@@ -52,7 +52,7 @@ class ImageDirectoryTracking(InteractiveTrackingApp):
                     # Log the corners of the region
                     _, frame_name = path.split(file_name)
                     for log, tracker in zip(self.log_files, self.trackers):
-                        if tracker.is_initialized():
+                        if tracker.is_initialized() and self.tracking:
                             log.write(frame_name + region_to_string(tracker.get_region()) + "\n")
                         else:
                             log.write("# Tracker was not running in " + frame_name + "\n")
