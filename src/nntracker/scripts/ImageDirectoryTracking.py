@@ -54,6 +54,8 @@ class ImageDirectoryTracking(InteractiveTrackingApp):
                     for log, tracker in zip(self.log_files, self.trackers):
                         if tracker.is_initialized():
                             log.write(frame_name + region_to_string(tracker.get_region()) + "\n")
+                        else:
+                            log.write("# Tracker was not running in " + frame_name + "\n")
 
                 img = cv2.imread(file_name)
                 i += 1
