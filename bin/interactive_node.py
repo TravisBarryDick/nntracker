@@ -32,7 +32,7 @@ class RosInteractiveTrackingApp(InteractiveTrackingApp):
             message.llx, message.lly = region[:,3]
             self.roi_pub.publish(message)
 
-app = RosInteractiveTrackingApp([make_nn_GN(use_scv=True), make_esm(use_scv=True)])
+app = RosInteractiveTrackingApp([make_nn_bmic(use_scv=True)])
 
 if __name__ == "__main__":
     rospy.spin()
